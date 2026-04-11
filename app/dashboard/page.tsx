@@ -29,7 +29,7 @@ const STAT_CARDS = [
     color: 'earth',
   },
   {
-    label: 'Freight Jobs',
+    label: 'REALM Group Freight',
     value: '—',
     change: null,
     href: '/freight',
