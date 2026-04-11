@@ -18,7 +18,7 @@ const FEATURE_CARDS = [
   },
   {
     icon: '🚛',
-    title: 'Freight Jobs',
+    title: 'REALM Group Freight',
     description:
       'Find carriers or post freight jobs for agricultural loads. Integrated with weighbridge data.',
     href: '/freight',
