@@ -26,7 +26,7 @@ export default async function FreightDetailPage({ params }: FreightDetailPagePro
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
         <ol className="flex items-center gap-2">
-          <li><Link href="/freight" className="hover:text-brand-600">Freight</Link></li>
+          <li><Link href="/freight" className="hover:text-brand-600">REALM Group Freight</Link></li>
           <li aria-hidden="true">/</li>
           <li className="text-gray-900 font-medium truncate max-w-xs">{id}</li>
         </ol>
