@@ -72,9 +72,49 @@ async function start() {
     console.log('Database connected');
     await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
     console.log('Models synced');
-    app.listen(PORT, '0.0.0.0', () => {
+
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`REALM Ag Marketplace running on port ${PORT}`);
     });
+
+    // ── Graceful shutdown ──────────────────────────────────────────────────
+    // Handles SIGTERM (Railway stop/redeploy) and SIGINT (Ctrl+C in dev).
+    // Stops accepting new connections, waits for in-flight requests to finish,
+    // then closes the database pool before exiting.
+
+    let isShuttingDown = false;
+
+    function shutdown(signal) {
+      if (isShuttingDown) return;
+      isShuttingDown = true;
+      console.log(`\n${signal} received — shutting down gracefully`);
+
+      server.close(async () => {
+        console.log('HTTP server closed');
+        try {
+          await sequelize.close();
+          console.log('Database pool closed');
+        } catch (err) {
+          console.error('Error closing database pool:', err.message);
+        }
+        process.exit(0);
+      });
+
+      // Force exit after 30 seconds if graceful shutdown stalls
+      setTimeout(() => {
+        console.error('Graceful shutdown timed out — forcing exit');
+        process.exit(1);
+      }, 30_000).unref();
+    }
+
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+
+    // Log unhandled promise rejections instead of crashing silently
+    process.on('unhandledRejection', (reason) => {
+      console.error('Unhandled promise rejection:', reason);
+    });
+
   } catch (err) {
     console.error('Failed to start:', err);
     process.exit(1);

@@ -1,0 +1,53 @@
+{
+  "compilerOptions": {
+    // ── Target & Module ──────────────────────────────────────────────────────
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+
+    // ── JSX (for React components) ───────────────────────────────────────────
+    "jsx": "preserve",
+
+    // ── Strict Type Checking ─────────────────────────────────────────────────
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": false,
+
+    // ── Emit ─────────────────────────────────────────────────────────────────
+    "noEmit": true,
+    "incremental": true,
+
+    // ── Path Aliases ─────────────────────────────────────────────────────────
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+
+    // ── Interop ──────────────────────────────────────────────────────────────
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+
+    // ── Skip type checking of declaration files ───────────────────────────────
+    "skipLibCheck": true
+  },
+  "include": [
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "pages/**/*.ts",
+    "pages/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "__tests__",
+    "src"
+  ]
+}

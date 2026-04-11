@@ -67,8 +67,15 @@ web_modules/
 
 # dotenv environment variable files
 .env
-.env.*
-!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# Keep .env.production as a template (no real secrets in it)
+!.env.production
+
+# Local file uploads (use cloud storage in production)
+uploads/
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
