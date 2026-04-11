@@ -1,32 +1,32 @@
 {
   "name": "realm-ag-marketplace",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "REALM Agricultural Marketplace - Fodder, Grain, Hay trading platform",
-  "main": "src/server.js",
+  "private": true,
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "db:migrate": "npx sequelize-cli db:migrate",
-    "db:seed": "npx sequelize-cli db:seed:all"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p ${PORT:-3000}",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "sequelize": "^6.35.0",
-    "pg": "^8.11.3",
-    "pg-hstore": "^2.3.4",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "helmet": "^7.1.0",
-    "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
-    "jsonwebtoken": "^9.0.2",
-    "bcryptjs": "^2.4.3",
-    "express-validator": "^7.0.1",
-    "uuid": "^9.0.0"
+    "@supabase/supabase-js": "^2.39.3",
+    "next": "14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "stripe": "^14.14.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2",
-    "sequelize-cli": "^6.6.2"
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.1.0",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
   },
   "engines": {
     "node": ">=18.0.0"

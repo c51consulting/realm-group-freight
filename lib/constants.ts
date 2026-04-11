@@ -1,0 +1,187 @@
+import type {
+  MaterialType,
+  UnitType,
+  ListingType,
+  PricingType,
+  QualityLevel,
+  AfiaGrade,
+  OrderStatus,
+  OfferStatus,
+  FreightJobStatus,
+} from './types';
+
+// ─── App metadata ─────────────────────────────────────────────────────────────
+
+export const APP_NAME = 'REALM Ag Marketplace';
+export const APP_DESCRIPTION =
+  'Agricultural materials marketplace — hay, fodder, grain, silage, seed, fertiliser, drums and bulk inputs.';
+export const PLATFORM_FEE_PERCENT = 5; // 5% platform fee on completed orders
+
+// ─── Material types ───────────────────────────────────────────────────────────
+
+export const MATERIAL_TYPE_LABELS: Record<MaterialType, string> = {
+  hay: 'Hay',
+  straw: 'Straw',
+  silage: 'Silage',
+  grain: 'Grain',
+  seed: 'Seed',
+  pellets: 'Pellets',
+  fertiliser: 'Fertiliser',
+  supplement: 'Supplement',
+  drums: 'Drums',
+  bulk_liquid: 'Bulk Liquid',
+  other: 'Other',
+};
+
+export const MATERIAL_TYPES: MaterialType[] = Object.keys(
+  MATERIAL_TYPE_LABELS,
+) as MaterialType[];
+
+// ─── Unit types ───────────────────────────────────────────────────────────────
+
+export const UNIT_TYPE_LABELS: Record<UnitType, string> = {
+  bale_small: 'Small Bale',
+  bale_large: 'Large Bale',
+  bale_round: 'Round Bale',
+  bag: 'Bag',
+  drum: 'Drum',
+  tonne: 'Tonne',
+  kg: 'Kilogram',
+  load: 'Load',
+  pallet: 'Pallet',
+  cubic_metre: 'Cubic Metre',
+  litre: 'Litre',
+  custom: 'Custom',
+};
+
+export const UNIT_TYPES: UnitType[] = Object.keys(UNIT_TYPE_LABELS) as UnitType[];
+
+// ─── Listing types ────────────────────────────────────────────────────────────
+
+export const LISTING_TYPE_LABELS: Record<ListingType, string> = {
+  sell: 'Selling',
+  buy: 'Buying',
+  freight_only: 'Freight Only',
+};
+
+// ─── Pricing types ────────────────────────────────────────────────────────────
+
+export const PRICING_TYPE_LABELS: Record<PricingType, string> = {
+  fixed: 'Fixed Price',
+  offers: 'Offers Welcome',
+  auction: 'Auction',
+  urgent: 'Urgent Sale',
+};
+
+// ─── Quality levels ───────────────────────────────────────────────────────────
+
+export const QUALITY_LEVEL_LABELS: Record<QualityLevel, string> = {
+  basic: 'Basic',
+  verified: 'Verified',
+  performance: 'Performance',
+};
+
+export const QUALITY_LEVEL_DESCRIPTIONS: Record<QualityLevel, string> = {
+  basic:
+    'On-farm NIR or vendor estimate. Suitable for small/spot deals.',
+  verified:
+    'At least one lab feed test plus on-farm NIR. Required for medium/seasonal deals.',
+  performance:
+    'Mandatory lab feed test with AFIA grade. Required for large/performance deals.',
+};
+
+export const QUALITY_LEVEL_REQUIREMENTS: Record<
+  QualityLevel,
+  { minLabTests: number; nirRequired: boolean; afiaRequired: boolean }
+> = {
+  basic:     { minLabTests: 0, nirRequired: false, afiaRequired: false },
+  verified:  { minLabTests: 1, nirRequired: true,  afiaRequired: false },
+  performance: { minLabTests: 1, nirRequired: false, afiaRequired: true },
+};
+
+// ─── AFIA grades ──────────────────────────────────────────────────────────────
+
+export const AFIA_GRADE_LABELS: Record<AfiaGrade, string> = {
+  A1: 'A1 — Premium',
+  A2: 'A2 — Good',
+  B1: 'B1 — Fair',
+  B2: 'B2 — Average',
+  C1: 'C1 — Below Average',
+  C2: 'C2 — Poor',
+  D: 'D — Reject',
+  ungraded: 'Ungraded',
+};
+
+export const AFIA_GRADES: AfiaGrade[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'D', 'ungraded'];
+
+// ─── Order statuses ───────────────────────────────────────────────────────────
+
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  pending_payment: 'Pending Payment',
+  paid: 'Paid',
+  in_transit: 'In Transit',
+  delivered: 'Delivered',
+  confirmed: 'Confirmed',
+  disputed: 'Disputed',
+  refunded: 'Refunded',
+  completed: 'Completed',
+};
+
+/** Ordered flow for display purposes */
+export const ORDER_STATUS_FLOW: OrderStatus[] = [
+  'pending_payment',
+  'paid',
+  'in_transit',
+  'delivered',
+  'confirmed',
+  'completed',
+];
+
+// ─── Offer statuses ───────────────────────────────────────────────────────────
+
+export const OFFER_STATUS_LABELS: Record<OfferStatus, string> = {
+  pending: 'Pending',
+  accepted: 'Accepted',
+  rejected: 'Rejected',
+  withdrawn: 'Withdrawn',
+  expired: 'Expired',
+};
+
+// ─── Freight job statuses ─────────────────────────────────────────────────────
+
+export const FREIGHT_JOB_STATUS_LABELS: Record<FreightJobStatus, string> = {
+  open: 'Open',
+  assigned: 'Assigned',
+  in_transit: 'In Transit',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+};
+
+// ─── Navigation ───────────────────────────────────────────────────────────────
+
+export const NAV_LINKS = [
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/listings',  label: 'Listings'  },
+  { href: '/freight',   label: 'Freight'   },
+  { href: '/quality',   label: 'Quality'   },
+  { href: '/offers',    label: 'Offers'    },
+  { href: '/orders',    label: 'Orders'    },
+] as const;
+
+// ─── Pagination ───────────────────────────────────────────────────────────────
+
+export const DEFAULT_PAGE_SIZE = 20;
+export const MAX_PAGE_SIZE = 100;
+
+// ─── Australian states ────────────────────────────────────────────────────────
+
+export const AU_STATES = [
+  { value: 'NSW', label: 'New South Wales' },
+  { value: 'VIC', label: 'Victoria' },
+  { value: 'QLD', label: 'Queensland' },
+  { value: 'SA',  label: 'South Australia' },
+  { value: 'WA',  label: 'Western Australia' },
+  { value: 'TAS', label: 'Tasmania' },
+  { value: 'NT',  label: 'Northern Territory' },
+  { value: 'ACT', label: 'Australian Capital Territory' },
+] as const;

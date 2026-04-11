@@ -1,14 +1,41 @@
-FROM node:18-alpine
+FROM node:18-alpine AS base
 
+# ─── Dependencies ─────────────────────────────────────────────────────────────
+FROM base AS deps
 WORKDIR /app
-
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm ci
 
+# ─── Builder ──────────────────────────────────────────────────────────────────
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN mkdir -p uploads/weighbridge uploads/feedtests
+# Next.js collects anonymous telemetry — disable in CI/CD
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN npm run build
+
+# ─── Runner ───────────────────────────────────────────────────────────────────
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser  --system --uid 1001 nextjs
+
+# Copy standalone output (requires output: 'standalone' in next.config.js)
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
 
 EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "src/server.js"]
+CMD ["node", "server.js"]
