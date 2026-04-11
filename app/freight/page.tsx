@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { MATERIAL_TYPE_LABELS, FREIGHT_JOB_STATUS_LABELS, AU_STATES } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'Freight Jobs',
-  description: 'Browse and post agricultural freight jobs.',
+  title: 'REALM Group Freight',
+      description: 'REALM Group Freight — agricultural freight logistics and carrier management.',
 };
 
 interface FreightPageProps {
@@ -23,9 +23,9 @@ export default function FreightPage({ searchParams }: FreightPageProps) {
       {/* Header */}
       <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="page-title">Freight Jobs</h1>
+          <h1 className="page-title">REALM Group Freight</h1>
           <p className="page-subtitle">
-            Find carriers for your agricultural loads, or pick up freight jobs.
+                          Find carriers for your agricultural loads, or pick up freight jobs.
           </p>
         </div>
         <Link href="/freight/create" className="btn-primary self-start sm:self-auto">
@@ -81,7 +81,7 @@ export default function FreightPage({ searchParams }: FreightPageProps) {
           {/* Empty state — replace with real data fetch */}
           <div className="empty-state card py-20">
             <span className="text-5xl mb-4">🚛</span>
-            <p className="empty-state-title">No freight jobs found</p>
+                        <p className="empty-state-title">No freight jobs found</p>
             <p className="empty-state-description">
               Post a freight job to find carriers, or check back later.
             </p>
