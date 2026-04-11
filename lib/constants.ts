@@ -162,7 +162,7 @@ export const FREIGHT_JOB_STATUS_LABELS: Record<FreightJobStatus, string> = {
 export const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/listings',  label: 'Listings'  },
-  { href: '/freight',   label: 'Freight'   },
+  { href: '/freight',   label: 'REALM Group Freight'   },
   { href: '/quality',   label: 'Quality'   },
   { href: '/offers',    label: 'Offers'    },
   { href: '/orders',    label: 'Orders'    },
