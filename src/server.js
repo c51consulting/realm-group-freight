@@ -23,6 +23,25 @@ app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    name: 'REALM Ag Marketplace',
+    version: '1.0.0',
+    description: 'Agricultural materials marketplace - hay, grain, fodder by weight, bale, bag or drum',
+    endpoints: {
+      auth: '/api/auth',
+      listings: '/api/listings',
+      offers: '/api/offers',
+      orders: '/api/orders',
+      weighbridge: '/api/weighbridge',
+      feedtests: '/api/feedtests',
+      users: '/api/users',
+      health: '/health'
+    }
+  });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'realm-ag-marketplace', version: '1.0.0' });
