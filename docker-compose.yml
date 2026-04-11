@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  # PostgreSQL database
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: realm_ag
+      POSTGRES_USER: realm
+      POSTGRES_PASSWORD: realm_dev_password
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # Express API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://realm:realm_dev_password@db:5432/realm_ag
+      JWT_SECRET: realm-dev-secret-change-in-production
+      NODE_ENV: development
+      PORT: 3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db
+    volumes:
+      - ./uploads:/app/uploads
+
+  # Next.js frontend
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+      PORT: 3001
+    ports:
+      - '3001:3001'
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

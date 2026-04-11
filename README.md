@@ -5,8 +5,9 @@ An Airtasker-style marketplace for agricultural materials — hay, fodder, grain
 ## Tech Stack
 
 - **Frontend / Full-stack**: Next.js 14 (App Router, TypeScript)
+- **Client (standalone)**: Next.js 14 in `client/` — React 18, TypeScript, Tailwind CSS
 - **Database**: PostgreSQL via Supabase (or direct `DATABASE_URL`)
-- **Auth**: Supabase Auth (JWT)
+- **Auth**: Supabase Auth (JWT) + Express JWT (for `src/` API)
 - **Payments**: Stripe Connect (escrow hold & release)
 - **Deploy**: Railway (Railpack builder + Docker)
 
@@ -49,11 +50,48 @@ lib/
   supabase.ts                 # Supabase browser + service-role clients
   api.ts                      # CRUD helpers (listings, freight, offers, orders…)
 
-src/                          # Legacy Express API (preserved for reference)
+src/                          # Express API (preserved for reference)
   server.js
   middleware/auth.js
   models/index.js
   routes/
+
+client/                       # Standalone Next.js 14 frontend (Express API client)
+  app/                        # App Router pages
+    layout.tsx                # Root layout (Navbar, AuthProvider, NotificationProvider)
+    page.tsx                  # Landing page
+    auth/login/               # Login page
+    auth/register/            # Registration page
+    dashboard/                # User dashboard with stats
+    listings/                 # Browse, detail, create, edit
+    freight/                  # Freight jobs browse, detail, create
+    offers/                   # My offers list
+    orders/                   # My orders list + detail with timeline
+    quality/                  # Quality tiers reference
+    profile/                  # User profile (own + public)
+  components/                 # Reusable React components
+    Navbar.tsx                # Responsive navigation with mobile menu
+    ListingCard.tsx           # Listing browse card
+    OfferForm.tsx             # Submit offer on listing
+    ListingForm.tsx           # Create / edit listing
+    AuthForm.tsx              # Login / register forms
+    OrderTimeline.tsx         # Visual order status flow
+    WeighEventForm.tsx        # Manual weigh event entry
+    PODForm.tsx               # Proof of delivery upload
+    ReviewForm.tsx            # Post-order star review
+    FeedTestUpload.tsx        # Feed test certificate upload
+    UserProfile.tsx           # Profile display + inline edit
+    SearchFilters.tsx         # Listing filter sidebar
+    PaginationControls.tsx    # Page navigation
+  lib/
+    types.ts                  # Shared TypeScript types
+    client.ts                 # Typed API fetch wrapper (JWT Bearer)
+    client-utils.ts           # Currency, dates, validation helpers
+    context/
+      AuthContext.tsx         # Global auth state (login/logout/register)
+      NotificationContext.tsx # Toast notification system
+    hooks/
+      useAuth.ts / useListings.ts / useOffers.ts / useOrders.ts / useUser.ts / useForm.ts
 ```
 
 ## Data Models
