@@ -8,14 +8,31 @@ import type {
   OrderStatus,
   OfferStatus,
   FreightJobStatus,
+  LivestockCategory,
+  LivestockPurpose,
+  LivestockSex,
+  ListingCategory,
+  FreightCargoType,
 } from './types';
 
 // ─── App metadata ─────────────────────────────────────────────────────────────
 
 export const APP_NAME = 'REALM Ag Marketplace';
 export const APP_DESCRIPTION =
-  'Agricultural materials marketplace — hay, fodder, grain, silage, seed, fertiliser, drums and bulk inputs.';
-export const PLATFORM_FEE_PERCENT = 5; // 5% platform fee on completed orders
+  'Agricultural materials, livestock and equipment marketplace — hay, fodder, grain, silage, seed, fertiliser, cattle, sheep and more.';
+export const PLATFORM_FEE_PERCENT = 5;
+
+// ─── Listing categories ───────────────────────────────────────────────────────
+
+export const LISTING_CATEGORY_LABELS: Record<ListingCategory, string> = {
+  agricultural_materials: 'Agricultural Materials',
+  livestock: 'Livestock',
+  equipment: 'Equipment',
+};
+
+export const LISTING_CATEGORIES: ListingCategory[] = Object.keys(
+  LISTING_CATEGORY_LABELS,
+) as ListingCategory[];
 
 // ─── Material types ───────────────────────────────────────────────────────────
 
@@ -37,6 +54,60 @@ export const MATERIAL_TYPES: MaterialType[] = Object.keys(
   MATERIAL_TYPE_LABELS,
 ) as MaterialType[];
 
+// ─── Livestock categories ─────────────────────────────────────────────────────
+
+export const LIVESTOCK_CATEGORY_LABELS: Record<LivestockCategory, string> = {
+  cattle: 'Cattle',
+  sheep: 'Sheep',
+  goats: 'Goats',
+  pigs: 'Pigs',
+  horses: 'Horses',
+  poultry: 'Poultry',
+  alpacas: 'Alpacas',
+  other_livestock: 'Other Livestock',
+};
+
+export const LIVESTOCK_CATEGORIES: LivestockCategory[] = Object.keys(
+  LIVESTOCK_CATEGORY_LABELS,
+) as LivestockCategory[];
+
+export const LIVESTOCK_PURPOSE_LABELS: Record<LivestockPurpose, string> = {
+  breeding: 'Breeding',
+  fattening: 'Fattening',
+  store: 'Store',
+  export: 'Export',
+  slaughter: 'Slaughter',
+  stud: 'Stud',
+  companion: 'Companion',
+};
+
+export const LIVESTOCK_SEX_LABELS: Record<LivestockSex, string> = {
+  male: 'Male',
+  female: 'Female',
+  mixed: 'Mixed',
+  wether: 'Wether',
+};
+
+// ─── Freight cargo types ──────────────────────────────────────────────────────
+
+export const FREIGHT_CARGO_TYPE_LABELS: Record<FreightCargoType, string> = {
+  agricultural_material: 'Agricultural Material',
+  livestock: 'Livestock',
+  equipment: 'Equipment / Machinery',
+  other_cargo: 'Other Cargo',
+};
+
+export const FREIGHT_CARGO_TYPES: FreightCargoType[] = Object.keys(
+  FREIGHT_CARGO_TYPE_LABELS,
+) as FreightCargoType[];
+
+// ─── Fuel card (Capricorn) ────────────────────────────────────────────────────
+
+export const FUEL_CARD_DISTANCE_THRESHOLD_KM = 300;
+export const FUEL_CARD_PROVIDER = 'Capricorn';
+export const FUEL_CARD_DESCRIPTION =
+  'Drivers on loads over 300km can access fuel assistance via Capricorn Motor Pass — accepted at 6,000+ service stations nationwide including BP, Ampol, Shell and more.';
+
 // ─── Unit types ───────────────────────────────────────────────────────────────
 
 export const UNIT_TYPE_LABELS: Record<UnitType, string> = {
@@ -51,6 +122,7 @@ export const UNIT_TYPE_LABELS: Record<UnitType, string> = {
   pallet: 'Pallet',
   cubic_metre: 'Cubic Metre',
   litre: 'Litre',
+  head: 'Head',
   custom: 'Custom',
 };
 
@@ -94,8 +166,8 @@ export const QUALITY_LEVEL_REQUIREMENTS: Record<
   QualityLevel,
   { minLabTests: number; nirRequired: boolean; afiaRequired: boolean }
 > = {
-  basic:     { minLabTests: 0, nirRequired: false, afiaRequired: false },
-  verified:  { minLabTests: 1, nirRequired: true,  afiaRequired: false },
+  basic: { minLabTests: 0, nirRequired: false, afiaRequired: false },
+  verified: { minLabTests: 1, nirRequired: true, afiaRequired: false },
   performance: { minLabTests: 1, nirRequired: false, afiaRequired: true },
 };
 
@@ -127,7 +199,6 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   completed: 'Completed',
 };
 
-/** Ordered flow for display purposes */
 export const ORDER_STATUS_FLOW: OrderStatus[] = [
   'pending_payment',
   'paid',
@@ -161,11 +232,12 @@ export const FREIGHT_JOB_STATUS_LABELS: Record<FreightJobStatus, string> = {
 
 export const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },
-  { href: '/listings',  label: 'Listings'  },
-  { href: '/freight',   label: 'REALM Group Freight'   },
-  { href: '/quality',   label: 'Quality'   },
-  { href: '/offers',    label: 'Offers'    },
-  { href: '/orders',    label: 'Orders'    },
+  { href: '/listings', label: 'Listings' },
+  { href: '/livestock', label: 'Livestock' },
+  { href: '/freight', label: 'REALM Group Freight' },
+  { href: '/quality', label: 'Quality' },
+  { href: '/offers', label: 'Offers' },
+  { href: '/orders', label: 'Orders' },
 ] as const;
 
 // ─── Pagination ───────────────────────────────────────────────────────────────
@@ -179,9 +251,9 @@ export const AU_STATES = [
   { value: 'NSW', label: 'New South Wales' },
   { value: 'VIC', label: 'Victoria' },
   { value: 'QLD', label: 'Queensland' },
-  { value: 'SA',  label: 'South Australia' },
-  { value: 'WA',  label: 'Western Australia' },
+  { value: 'SA', label: 'South Australia' },
+  { value: 'WA', label: 'Western Australia' },
   { value: 'TAS', label: 'Tasmania' },
-  { value: 'NT',  label: 'Northern Territory' },
+  { value: 'NT', label: 'Northern Territory' },
   { value: 'ACT', label: 'Australian Capital Territory' },
 ] as const;
