@@ -35,13 +35,22 @@ const STAT_CARDS = [
     href: '/freight',
     color: 'gray',
   },
+  {
+    label: 'Livestock Exchange',
+    value: '—',
+    change: null,
+    href: '/livestock',
+    color: 'green',
+  },
 ];
 
 const QUICK_ACTIONS = [
-  { label: 'Post a Listing',    href: '/listings/create', icon: '📋' },
-  { label: 'Post Freight Job',  href: '/freight/create',  icon: '🚛' },
-  { label: 'Browse Listings',   href: '/listings',        icon: '🌾' },
-  { label: 'View Orders',       href: '/orders',          icon: '📦' },
+  { label: 'Post a Listing', href: '/listings/create', icon: '📋' },
+  { label: 'Post Freight Job', href: '/freight/create', icon: '🚛' },
+  { label: 'Post Livestock', href: '/livestock/create', icon: '🐂' },
+  { label: 'Browse Listings', href: '/listings', icon: '🌾' },
+  { label: 'Browse Livestock', href: '/livestock', icon: '🦬' },
+  { label: 'View Orders', href: '/orders', icon: '📦' },
 ];
 
 export default function DashboardPage() {
@@ -53,13 +62,18 @@ export default function DashboardPage() {
           <h1 className="page-title">Dashboard</h1>
           <p className="page-subtitle">Overview of your marketplace activity.</p>
         </div>
-        <Link href="/listings/create" className="btn-primary self-start sm:self-auto">
-          + Post Listing
-        </Link>
+        <div className="flex gap-2 self-start sm:self-auto">
+          <Link href="/listings/create" className="btn-primary">
+            + Post Listing
+          </Link>
+          <Link href="/livestock/create" className="btn-primary bg-green-600 hover:bg-green-700">
+            + Post Livestock
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         {STAT_CARDS.map((stat) => (
           <Link
             key={stat.label}
@@ -77,7 +91,7 @@ export default function DashboardPage() {
       {/* Quick actions */}
       <section className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {QUICK_ACTIONS.map((action) => (
             <Link
               key={action.href}
@@ -93,7 +107,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Recent activity placeholder */}
+      {/* Recent activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent listings */}
         <section className="card p-6">
@@ -114,7 +128,28 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Recent orders */}
+        {/* Recent livestock */}
+        <section className="card p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-semibold text-gray-900">Recent Livestock</h2>
+            <Link href="/livestock" className="text-sm text-green-600 hover:text-green-700">
+              View all →
+            </Link>
+          </div>
+          <div className="empty-state py-8">
+            <p className="empty-state-title text-base">No livestock listings yet</p>
+            <p className="empty-state-description text-xs">
+              Your livestock listings will appear here.
+            </p>
+            <Link href="/livestock/create" className="btn-primary mt-4 text-xs px-3 py-1.5 bg-green-600 hover:bg-green-700">
+              Post your first livestock listing
+            </Link>
+          </div>
+        </section>
+      </div>
+
+      {/* Recent orders */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <section className="card p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-gray-900">Recent Orders</h2>
@@ -127,6 +162,25 @@ export default function DashboardPage() {
             <p className="empty-state-description text-xs">
               Your orders will appear here once an offer is accepted.
             </p>
+          </div>
+        </section>
+
+        {/* Recent freight */}
+        <section className="card p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-semibold text-gray-900">Recent Freight Jobs</h2>
+            <Link href="/freight" className="text-sm text-brand-600 hover:text-brand-700">
+              View all →
+            </Link>
+          </div>
+          <div className="empty-state py-8">
+            <p className="empty-state-title text-base">No freight jobs yet</p>
+            <p className="empty-state-description text-xs">
+              Your freight jobs will appear here.
+            </p>
+            <Link href="/freight/create" className="btn-primary mt-4 text-xs px-3 py-1.5">
+              Post your first freight job
+            </Link>
           </div>
         </section>
       </div>
