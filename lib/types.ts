@@ -20,6 +20,47 @@ export type MaterialType =
   | 'bulk_liquid'
   | 'other';
 
+// ─── Livestock Types ──────────────────────────────────────────────────────────
+
+export type LivestockCategory =
+  | 'cattle'
+  | 'sheep'
+  | 'goats'
+  | 'pigs'
+  | 'horses'
+  | 'poultry'
+  | 'alpacas'
+  | 'other_livestock';
+
+export type LivestockPurpose =
+  | 'breeding'
+  | 'fattening'
+  | 'store'
+  | 'export'
+  | 'slaughter'
+  | 'stud'
+  | 'companion';
+
+export type LivestockSex = 'male' | 'female' | 'mixed' | 'wether';
+
+// ─── Equipment / Cargo Types (Freight) ────────────────────────────────────────
+
+export type FreightCargoType = 'agricultural_material' | 'livestock' | 'equipment' | 'other_cargo';
+
+export interface EquipmentDimensions {
+  heightMm?: number;
+  widthMm?: number;
+  lengthMm?: number;
+  weightKg?: number;
+  serialNumber?: string;
+  makeModel?: string;
+  description?: string;
+}
+
+// ─── Listing Category ─────────────────────────────────────────────────────────
+
+export type ListingCategory = 'agricultural_materials' | 'livestock' | 'equipment';
+
 export type UnitType =
   | 'bale_small'
   | 'bale_large'
@@ -32,22 +73,16 @@ export type UnitType =
   | 'pallet'
   | 'cubic_metre'
   | 'litre'
+  | 'head'
   | 'custom';
 
 export type ListingType = 'sell' | 'buy' | 'freight_only';
-
 export type ListingStatus = 'active' | 'paused' | 'sold' | 'expired' | 'cancelled';
-
 export type PricingType = 'fixed' | 'offers' | 'auction' | 'urgent';
-
 export type QualityLevel = 'basic' | 'verified' | 'performance';
-
 export type AfiaGrade = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' | 'D' | 'ungraded';
-
 export type FeedTestSource = 'lab' | 'on_farm_nir' | 'vendor_estimate';
-
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'withdrawn' | 'expired';
-
 export type OrderStatus =
   | 'pending_payment'
   | 'paid'
@@ -57,13 +92,9 @@ export type OrderStatus =
   | 'disputed'
   | 'refunded'
   | 'completed';
-
 export type WeighSource = 'api' | 'csv_import' | 'email_parse' | 'ocr_upload' | 'manual';
-
 export type WeightUnit = 'kg' | 'tonne';
-
 export type SettlementStatus = 'pending' | 'matched' | 'disputed' | 'settled';
-
 export type FreightJobStatus = 'open' | 'assigned' | 'in_transit' | 'delivered' | 'cancelled';
 
 // ─── Address ──────────────────────────────────────────────────────────────────
@@ -95,16 +126,35 @@ export interface User {
   updatedAt: ISODateString;
 }
 
+// ─── Livestock Listing ────────────────────────────────────────────────────────
+
+export interface LivestockDetails {
+  category: LivestockCategory;
+  breed?: string;
+  sex?: LivestockSex;
+  ageMonths?: number;
+  headCount: number;
+  averageWeightKg?: number;
+  purpose?: LivestockPurpose;
+  nlisId?: string;
+  pic?: string; // Property Identification Code
+  healthStatus?: string;
+  vaccinationHistory?: string;
+  feedRegime?: string;
+}
+
 // ─── Listing ──────────────────────────────────────────────────────────────────
 
 export interface Listing {
   id: UUID;
   sellerId: UUID;
   seller?: User;
+  category: ListingCategory;
   type: ListingType;
   status: ListingStatus;
-  materialType: MaterialType;
+  materialType?: MaterialType;
   materialSubtype?: string;
+  livestockDetails?: LivestockDetails;
   title: string;
   description?: string;
   unitType: UnitType;
@@ -142,7 +192,6 @@ export interface FeedTest {
   deviceId?: string;
   testDate?: ISODateString;
   certificateUrl?: string;
-  // Nutritional values
   dryMatter?: number;
   moisture?: number;
   crudeProtein?: number;
@@ -160,7 +209,6 @@ export interface FeedTest {
   updatedAt: ISODateString;
 }
 
-/** Quality tier summary derived from feed test results */
 export interface QualityTier {
   id: UUID;
   listingId: UUID;
@@ -168,7 +216,6 @@ export interface QualityTier {
   level: QualityLevel;
   afiaGrade?: AfiaGrade;
   feedTests: FeedTest[];
-  /** Whether the tier meets the minimum evidence requirements for its level */
   compliant: boolean;
   notes?: string;
   createdAt: ISODateString;
@@ -192,14 +239,42 @@ export interface FreightJob {
   deliveryAddress: Address;
   deliveryLat?: number;
   deliveryLng?: number;
-  materialType: MaterialType;
+  cargoType: FreightCargoType;
+  materialType?: MaterialType;
+  livestockCategory?: LivestockCategory;
+  livestockHeadCount?: number;
+  equipmentDimensions?: EquipmentDimensions;
   description?: string;
   estimatedWeight?: number;
   weightUnit: WeightUnit;
+  distanceKm?: number;
   requiredBy?: ISODateString;
   offeredRate?: number;
   agreedRate?: number;
+  fuelCardEligible?: boolean;
+  fuelCardCode?: string;
   notes?: string;
+  createdAt: ISODateString;
+  updatedAt: ISODateString;
+}
+
+// ─── Capricorn Fuel Card ──────────────────────────────────────────────────────
+
+export interface CapricornFuelTransaction {
+  id: UUID;
+  freightJobId: UUID;
+  freightJob?: FreightJob;
+  carrierId: UUID;
+  carrier?: User;
+  accessCode: string;
+  distanceKm: number;
+  fuelLitres?: number;
+  fuelCostAud?: number;
+  realmContributionAud?: number;
+  receiptUrl?: string;
+  odometerStart?: number;
+  odometerEnd?: number;
+  status: 'pending' | 'approved' | 'claimed' | 'settled';
   createdAt: ISODateString;
   updatedAt: ISODateString;
 }
@@ -243,7 +318,6 @@ export interface Order {
   status: OrderStatus;
   totalAmount: number;
   freightAmount?: number;
-  /** Platform fee (5% of totalAmount) */
   platformFee: number;
   paymentHeld: boolean;
   paymentReleasedAt?: ISODateString;
@@ -320,7 +394,7 @@ export interface Review {
   reviewer?: User;
   revieweeId: UUID;
   reviewee?: User;
-  rating: number; // 1–5
+  rating: number;
   comment?: string;
   role: 'buyer' | 'seller' | 'carrier';
   createdAt: ISODateString;
