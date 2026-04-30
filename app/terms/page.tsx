@@ -2,32 +2,42 @@ import React from 'react';
 import { APP_NAME } from '@/lib/constants';
 
 export default function TermsPage() {
-    return (
-          <div className="max-w-4xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-                <h1 className="text-3xl font-extrabold text-gray-900 mb-8">Terms of Service</h1>h1>
-                
-                <div className="prose prose-brand max-w-none text-gray-600">
-                        <p className="mb-4">Last updated: {new Date().toLocaleDateString()}</p>p>
-                        
-                        <section className="mb-8">
-                                  <h2 className="text-xl font-bold text-gray-900 mb-4">1. Acceptance of Terms</h2>h2>
-                                  <p>
-                                              By accessing or using {APP_NAME}, you agree to be bound by these Terms of Service and all applicable laws and regulations. 
-                                              If you do not agree with any of these terms, you are prohibited from using or accessing this site.
-                                  </p>p>
-                        </section>section>
-                
-                        <section className="mb-8">
-                                  <h2 className="text-xl font-bold text-gray-900 mb-4">2. Marketplace Services</h2>h2>
-                                  <p>
-                                    {APP_NAME} provides a platform for the trading of agricultural materials, livestock, and equipment. 
-                                              We act as a facilitator and do not take ownership of the goods traded on the platform.
-                                  </p>p>
-                        </section>section>
-                
-                        <section className="mb-8">
-                                  <h2 className="text-xl font-bold text-gray-900 mb-4">3. Payments and Trust Account</h2>h2>
-                                  <p>
-                                              All payments made through the platform are held in trust by REALM Group Global. 
-                                              Funds are released to the seller only after delivery has been confirmed and verified. 
-                                      </div>
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-16 sm:px-6 lg:px-8 prose prose-brand">
+      <h1>Terms of Service</h1>
+      <p>
+        These Terms govern your use of {APP_NAME}. By accessing the platform you
+        agree to these Terms.
+      </p>
+      <h2>Accounts</h2>
+      <p>
+        You must provide accurate information when creating an account and keep
+        your credentials secure.
+      </p>
+      <h2>Listings and Orders</h2>
+      <p>
+        Sellers are responsible for the accuracy of their listings. Buyers are
+        responsible for reviewing listings before placing offers. Funds are held
+        in trust through our payment provider until delivery is verified.
+      </p>
+      <h2>Prohibited Use</h2>
+      <ul>
+        <li>Fraudulent or misleading listings.</li>
+        <li>Infringement of intellectual property or third-party rights.</li>
+        <li>Any activity that violates applicable law.</li>
+      </ul>
+      <h2>Liability</h2>
+      <p>
+        {APP_NAME} is provided on an &quot;as is&quot; basis. To the maximum
+        extent permitted by law, we exclude implied warranties and are not
+        liable for indirect or consequential loss.
+      </p>
+      <h2>Changes</h2>
+      <p>
+        We may update these Terms from time to time. Continued use of the
+        platform after changes constitutes acceptance of the updated Terms.
+      </p>
+    </div>
+  );
+}
+
