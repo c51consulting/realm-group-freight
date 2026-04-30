@@ -1,6 +1,6 @@
 /**
  * Stripe payment integration for REALM Ag Marketplace
- * Handles escrow payments, platform fees, and payment release
+ * Handles held in trust payments, platform fees, and payment release
  */
 
 import Stripe from 'stripe';
@@ -10,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 });
 
 export const PLATFORM_FEE_PERCENT = 2.5;
-export const ESCROW_HOLD_DAYS = 3;
+export const HELD_IN_TRUST_HOLD_DAYS = 3;
 
 export interface CreatePaymentIntentParams {
   amount: number; // in cents

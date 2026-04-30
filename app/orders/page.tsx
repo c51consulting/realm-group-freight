@@ -22,7 +22,7 @@ export default function OrdersPage({ searchParams }: OrdersPageProps) {
       <div className="page-header">
         <h1 className="page-title">Orders</h1>
         <p className="page-subtitle">
-          Track your orders through the full escrow lifecycle.
+          Track your orders through the full held in trust lifecycle.
         </p>
       </div>
 
