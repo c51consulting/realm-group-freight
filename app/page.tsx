@@ -22,6 +22,12 @@ const FEATURE_CARDS = [
     href: '/livestock',
     cta: 'View Livestock',
   },
+    {
+  title: 'Equipment',
+  description: 'Buy and sell agricultural equipment and machinery — tractors, balers, trailers, spreaders and more.',
+  href: '/equipment',
+  cta: 'View Equipment',
+},
   {
     title: 'Freight & Logistics',
     description:
