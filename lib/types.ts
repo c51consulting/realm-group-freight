@@ -416,3 +416,23 @@ export interface ApiError {
   code?: string;
   details?: Record<string, unknown>;
 }
+
+// ─── Equipment Listing Details (for Listing.equipmentDetails) ────────────────────────
+export type EquipmentCondition =
+  | 'new'
+  | 'as_new'
+  | 'excellent'
+  | 'good'
+  | 'fair'
+  | 'for_parts';
+
+export interface EquipmentDetails {
+  equipmentCategory: string;
+  make: string;
+  model: string;
+  year?: number;
+  hours?: number;
+  condition: EquipmentCondition;
+  serialNumber?: string;
+  attachments?: string[];
+}
