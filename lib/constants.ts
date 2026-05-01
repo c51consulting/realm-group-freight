@@ -175,6 +175,7 @@ export const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/listings', label: 'Listings' },
   { href: '/livestock', label: 'Livestock' },
+    { href: '/equipment', label: 'Equipment' },
   { href: '/freight', label: 'Freight' },
   { href: '/quality', label: 'Quality' },
   { href: '/offers', label: 'Offers' },
