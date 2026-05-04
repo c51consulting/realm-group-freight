@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import './globals.css';
 import { APP_NAME, APP_DESCRIPTION } from '@/lib/constants';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase-server';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -35,15 +36,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
-        <Header />
+        <Header userEmail={user?.email ?? null} />
         <main>{children}</main>
         <footer className="border-t bg-white mt-16">
           <div className="max-w-7xl mx-auto px-4 py-8 text-sm text-gray-500 flex flex-col sm:flex-row justify-between gap-2">

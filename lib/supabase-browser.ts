@@ -1,0 +1,12 @@
+import { createBrowserClient } from '@supabase/ssr';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+/**
+ * Supabase client for use in Client Components.
+ * Uses @supabase/ssr createBrowserClient for proper cookie handling.
+ */
+export function createClient() {
+  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+}

@@ -5,7 +5,11 @@ import { useState } from 'react';
 import Navigation from './Navigation';
 import { APP_NAME } from '@/lib/constants';
 
-export default function Header() {
+interface HeaderProps {
+  userEmail: string | null;
+}
+
+export default function Header({ userEmail }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -40,14 +44,44 @@ export default function Header() {
             <Navigation />
           </div>
 
-          {/* Desktop CTA */}
+          {/* Desktop CTA + Auth */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/listings/create"
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
-            >
-              + Post Listing
-            </Link>
+            {userEmail ? (
+              <>
+                <span className="text-sm text-gray-600 truncate max-w-[180px]" title={userEmail}>
+                  {userEmail}
+                </span>
+                <form action="/api/auth/signout" method="POST">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Sign out
+                  </button>
+                </form>
+                <Link
+                  href="/listings/create"
+                  className="inline-flex items-center px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
+                >
+                  + Post Listing
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -75,13 +109,43 @@ export default function Header() {
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white px-4 py-4 space-y-2">
           <Navigation mobile onNavigate={() => setMobileOpen(false)} />
-          <Link
-            href="/listings/create"
-            className="block w-full text-center px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors mt-3"
-            onClick={() => setMobileOpen(false)}
-          >
-            + Post Listing
-          </Link>
+          {userEmail ? (
+            <>
+              <Link
+                href="/listings/create"
+                className="block w-full text-center px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors mt-3"
+                onClick={() => setMobileOpen(false)}
+              >
+                + Post Listing
+              </Link>
+              <p className="text-xs text-gray-500 text-center pt-1 truncate">{userEmail}</p>
+              <form action="/api/auth/signout" method="POST">
+                <button
+                  type="submit"
+                  className="block w-full text-center px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Sign out
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="block w-full text-center px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors mt-3"
+                onClick={() => setMobileOpen(false)}
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/register"
+                className="block w-full text-center px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                Sign up
+              </Link>
+            </>
+          )}
         </div>
       )}
     </header>
