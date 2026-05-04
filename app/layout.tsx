@@ -5,6 +5,9 @@ import './globals.css';
 import { APP_NAME, APP_DESCRIPTION } from '@/lib/constants';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
