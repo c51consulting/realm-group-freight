@@ -1,12 +1,39 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Navigation from './Navigation';
 import { APP_NAME } from '@/lib/constants';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+    router.refresh();
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -40,14 +67,42 @@ export default function Header() {
             <Navigation />
           </div>
 
-          {/* Desktop CTA */}
+          {/* Desktop CTA / Auth */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/listings/create"
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
-            >
-              + Post Listing
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  href="/listings/create"
+                  className="inline-flex items-center px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
+                >
+                  + Post Listing
+                </Link>
+                <span className="text-sm text-gray-500 truncate max-w-[160px]" title={user.email}>
+                  {user.email}
+                </span>
+                <button
+                  onClick={handleSignOut}
+                  className="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -75,13 +130,43 @@ export default function Header() {
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white px-4 py-4 space-y-2">
           <Navigation mobile onNavigate={() => setMobileOpen(false)} />
-          <Link
-            href="/listings/create"
-            className="block w-full text-center px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors mt-3"
-            onClick={() => setMobileOpen(false)}
-          >
-            + Post Listing
-          </Link>
+          {user ? (
+            <>
+              <Link
+                href="/listings/create"
+                className="block w-full text-center px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors mt-3"
+                onClick={() => setMobileOpen(false)}
+              >
+                + Post Listing
+              </Link>
+              <div className="pt-2 border-t border-gray-100 mt-2">
+                <p className="text-xs text-gray-500 px-1 mb-2 truncate">{user.email}</p>
+                <button
+                  onClick={() => { setMobileOpen(false); handleSignOut(); }}
+                  className="block w-full text-center px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Sign out
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex gap-2 mt-3">
+              <Link
+                href="/login"
+                className="flex-1 text-center px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                Login
+              </Link>
+              <Link
+                href="/register"
+                className="flex-1 text-center px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                Register
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </header>
