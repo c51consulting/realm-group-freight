@@ -263,7 +263,7 @@ export default function CreateListingPage() {
         <section className="card p-6 space-y-4">
           <div>
             <h2 className="font-semibold text-gray-900">Photos</h2>
-            <p className="text-xs text-gray-500 mt-1">Add up to 3 photos. At least 1 is required to give your listing relevance and clarity.</p>
+            <p className="text-xs text-gray-500 mt-1">Add 1 to 3 photos to give your listing relevance and clarity. The first photo is required; the other two are optional. Supported file types: JPG, PNG or WebP. Recommended size at least 1200 by 800 px. Max 5 MB per photo.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[0, 1, 2].map((i) => (
