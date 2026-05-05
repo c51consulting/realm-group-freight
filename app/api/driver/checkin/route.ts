@@ -10,7 +10,7 @@ function num(v: any): number | null {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -18,21 +18,17 @@ export async function POST(req: NextRequest) {
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const orderId = body?.order_id;
-  const stage = body?.stage;
-  const vehicleRego = body?.vehicle_rego;
   if (!orderId) return NextResponse.json({ error: 'order_id required' }, { status: 400 });
-  if (!stage || !['pre_load','post_load','pre_unload','post_unload'].includes(stage)) {
-    return NextResponse.json({ error: 'invalid stage' }, { status: 400 });
-  }
-  if (!vehicleRego) return NextResponse.json({ error: 'vehicle_rego required' }, { status: 400 });
 
-  const row = {
+  const stage = body?.stage;
+  if (!stage) return NextResponse.json({ error: 'stage required' }, { status: 400 });
+
+  const row: Record<string, any> = {
     order_id: orderId,
     driver_user_id: user.id,
-    carrier_id: body.carrier_id ?? null,
     stage,
-    vehicle_rego: String(vehicleRego).toUpperCase().trim(),
-    trailer_rego: body.trailer_rego ? String(body.trailer_rego).toUpperCase().trim() : null,
+    vehicle_rego: body.vehicle_rego ?? null,
+    trailer_rego: body.trailer_rego ?? null,
     abn: body.abn ?? null,
     odometer_km: num(body.odometer_km),
     seal_number: body.seal_number ?? null,
@@ -48,7 +44,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const orderId = new URL(req.url).searchParams.get('order_id');
