@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 function num(v: any): number | null {
   if (v === null || v === undefined || v === '') return null;
   const n = Number(v);
@@ -8,7 +10,7 @@ function num(v: any): number | null {
 }
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const orderId = params.id;
@@ -34,7 +36,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 }
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data, error } = await supabase
