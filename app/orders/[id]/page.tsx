@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ORDER_STATUS_LABELS, ORDER_STATUS_FLOW, PLATFORM_FEE_PERCENT } from '@/lib/constants';
+import { WeighbridgeTimeline } from '@/components/order/WeighbridgeTimeline';
 
 interface OrderDetailPageProps {
   params: { id: string };
@@ -127,6 +128,8 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
             */}
           </div>
         </div>
+
+        <WeighbridgeTimeline orderId={id} />
 
         {/* Sidebar */}
         <div className="space-y-4">
