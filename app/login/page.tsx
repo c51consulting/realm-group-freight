@@ -11,7 +11,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [info, setInfo] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showResend, setShowResend] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const message = searchParams.get('message')
@@ -21,25 +23,42 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setInfo(null)
+    setShowResend(false)
     setLoading(true)
-
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
-        setError(error.message)
+        const msg = error.message.toLowerCase()
+        if (msg.includes('email not confirmed')) {
+          setError('Your email has not been confirmed yet. Please check your inbox, or resend the confirmation email below.')
+          setShowResend(true)
+        } else if (msg.includes('invalid login') || msg.includes('invalid credentials')) {
+          setError('Invalid email or password.')
+        } else {
+          setError(error.message)
+        }
       } else {
         router.push(redirectTo)
         router.refresh()
       }
     } catch {
-      setError('An unexpected error occurred')
+      setError('An unexpected error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleResend = async () => {
+    setError(null)
+    setInfo(null)
+    if (!email) {
+      setError('Enter your email above first, then click Resend.')
+      return
+    }
+    const { error } = await supabase.auth.resend({ type: 'signup', email })
+    if (error) setError(error.message)
+    else setInfo('Confirmation email re-sent to ' + email + '. Please check your inbox (and spam folder).')
   }
 
   return (
@@ -50,11 +69,15 @@ export default function LoginPage() {
             Sign in to your account
           </h2>
         </div>
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {message && (
             <div className="rounded-md bg-brand-50 p-4">
               <p className="text-sm font-medium text-brand-800">{message}</p>
+            </div>
+          )}
+          {info && (
+            <div className="rounded-md bg-green-50 p-4">
+              <p className="text-sm font-medium text-green-800">{info}</p>
             </div>
           )}
           {error && (
@@ -62,12 +85,9 @@ export default function LoginPage() {
               <p className="text-sm font-medium text-red-800">{error}</p>
             </div>
           )}
-
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
+              <label htmlFor="email" className="sr-only">Email address</label>
               <input
                 id="email"
                 name="email"
@@ -81,9 +101,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
+              <label htmlFor="password" className="sr-only">Password</label>
               <input
                 id="password"
                 name="password"
@@ -97,25 +115,29 @@ export default function LoginPage() {
               />
             </div>
           </div>
-
           <button
             type="submit"
             disabled={loading}
             className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-brand-500 hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 transition-colors"
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
-
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Don&apos;t have an account?{' '}
-              <Link
-                href="/register"
-                className="font-medium text-brand-600 hover:text-brand-500"
-              >
-                Register
-              </Link>
-            </p>
+          {showResend && (
+            <button
+              type="button"
+              onClick={handleResend}
+              className="w-full text-sm font-medium text-brand-600 hover:text-brand-500"
+            >
+              Resend confirmation email
+            </button>
+          )}
+          <div className="flex items-center justify-between text-sm">
+            <Link href="/forgot-password" className="font-medium text-brand-600 hover:text-brand-500">
+              Forgot password?
+            </Link>
+            <Link href="/register" className="font-medium text-brand-600 hover:text-brand-500">
+              Create account
+            </Link>
           </div>
         </form>
       </div>
