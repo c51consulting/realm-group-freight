@@ -11,11 +11,13 @@ import {
   QUALITY_LEVEL_DESCRIPTIONS,
   AU_STATES,
 } from '@/lib/constants';
+import { supabase } from '@/lib/supabase';
 
 export default function CreateListingPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<(File | null)[]>([null, null, null]);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -55,13 +57,37 @@ export default function CreateListingPage() {
       freightIncluded: fd.get('freightIncluded') === 'on',
       loadingAvailable: fd.get('loadingAvailable') === 'on',
     };
+    // Validate at least one photo and upload to Supabase Storage
+    const files = photos.filter((f): f is File => !!f);
+    if (files.length === 0) {
+      setError('At least 1 photo is required');
+      setSubmitting(false);
+      return;
+    }
+    let imageUrls: string[] = [];
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('You must be signed in to upload photos');
+      for (const file of files) {
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = user.id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+        const up = await supabase.storage.from('listing-images').upload(path, file, { upsert: false, contentType: file.type });
+        if (up.error) throw new Error('Photo upload failed: ' + up.error.message);
+        const { data: pub } = supabase.storage.from('listing-images').getPublicUrl(path);
+        imageUrls.push(pub.publicUrl);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Photo upload failed');
+      setSubmitting(false);
+      return;
+    }
+
 
     try {
       const res = await fetch('/api/listings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+        body: JSON.stringify({ ...payload, images: imageUrls }),      });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || (Array.isArray(data.errors) ? data.errors.join(', ') : null) || ('Request failed (' + res.status + ')'));
@@ -232,6 +258,31 @@ export default function CreateListingPage() {
           <div className="flex items-center gap-3">
             <input id="loadingAvailable" name="loadingAvailable" type="checkbox" className="rounded border-gray-300 text-brand-500 focus:ring-brand-500" />
             <label htmlFor="loadingAvailable" className="text-sm text-gray-700">Loading equipment available on-site</label>
+          </div>
+        </section>
+        <section className="card p-6 space-y-4">
+          <div>
+            <h2 className="font-semibold text-gray-900">Photos</h2>
+            <p className="text-xs text-gray-500 mt-1">Add up to 3 photos. At least 1 is required to give your listing relevance and clarity.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[0, 1, 2].map((i) => (
+              <div key={i}>
+                <label htmlFor={`photo-${i}`} className="label">{i === 0 ? 'Photo 1 *' : `Photo ${i + 1}`}</label>
+                <input
+                  id={`photo-${i}`}
+                  type="file"
+                  accept="image/*"
+                  required={i === 0}
+                  onChange={(e) => {
+                    const f = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+                    setPhotos((prev) => { const next = [...prev]; next[i] = f; return next; });
+                  }}
+                  className="block w-full text-sm text-gray-700 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
+                />
+                {photos[i] && (<p className="text-xs text-gray-500 mt-1 truncate">{photos[i]!.name}</p>)}
+              </div>
+            ))}
           </div>
         </section>
 
