@@ -103,6 +103,9 @@ export async function POST(request: NextRequest) {
   if (authError || !user) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
+  
+  // Ensure a public users row exists for this auth user (FK target)
+  await supabase.from('users').upsert({ id: user.id, email: user.email }, { onConflict: 'id' });
 
   const row = toDbRow({ ...body, sellerId: user.id, status: 'active' });
 
