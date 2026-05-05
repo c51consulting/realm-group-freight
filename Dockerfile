@@ -15,6 +15,15 @@ COPY . .
 # Next.js collects anonymous telemetry — disable in CI/CD
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# NEXT_PUBLIC_* must be available at build time so Next.js can inline them into the client bundle.
+# Railway forwards matching service variables as build args when declared as ARG below.
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
 RUN npm run build
 
 # ─── Runner ───────────────────────────────────────────────────────────────────
