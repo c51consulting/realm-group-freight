@@ -1,0 +1,16 @@
+[Unit]
+Description=REALM Edge Gateway (weighbridge -> ingest)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/realm-edge-gateway
+EnvironmentFile=/opt/realm-edge-gateway/.env
+ExecStart=/usr/bin/node /opt/realm-edge-gateway/index.js
+Restart=always
+RestartSec=5
+User=pi
+
+[Install]
+WantedBy=multi-user.target
