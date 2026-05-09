@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { APP_NAME } from '@/lib/constants';
 
 export const metadata: Metadata = {
-  title: 'REALM Ag Marketplace — Australia\'s Agricultural Marketplace',
+  title: 'REALM Group Freight — Australia\'s Agricultural Marketplace',
   description:
     'Buy and sell hay, grain, silage, livestock, and equipment across Australia. Verified quality testing, integrated freight, and secure escrow payments.',
   keywords: [

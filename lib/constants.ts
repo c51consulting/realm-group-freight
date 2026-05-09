@@ -15,7 +15,7 @@ import type {
   FreightCargoType,
 } from './types';
 
-export const APP_NAME = 'REALM Ag Marketplace';
+export const APP_NAME = 'REALM Group Freight';
 export const APP_DESCRIPTION =
   'Australia\'s agricultural marketplace — buy and sell hay, grain, livestock, equipment and more with verified quality, integrated freight, and secure escrow payments.';
 export const PLATFORM_FEE_PERCENT = 5;

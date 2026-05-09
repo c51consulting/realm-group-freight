@@ -57,7 +57,7 @@ export default function RootLayout({
                     <circle cx="16" cy="16" r="16" className="fill-brand-500" />
                     <path d="M16 6v20M10 10c0 0 2 2 6 2s6-2 6-2M10 16c0 0 2 2 6 2s6-2 6-2" stroke="white" strokeWidth="2" strokeLinecap="round" />
                   </svg>
-                  <span className="font-bold text-white">REALM Ag Marketplace</span>
+                  <span className="font-bold text-white">REALM Group Freight</span>
                 </div>
                 <p className="text-sm leading-relaxed">Australia&apos;s agricultural trading platform. Buy and sell with confidence.</p>
                 <p className="text-xs mt-3">Part of the <a href="https://realmgroup.global" className="text-brand-400 hover:text-brand-300">REALM Group</a> ecosystem.</p>
@@ -94,7 +94,7 @@ export default function RootLayout({
               </div>
             </div>
             <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between gap-2 text-xs">
-              <p>&copy; {new Date().getFullYear()} REALM Ag Marketplace. All rights reserved. Part of REALM Group Global.</p>
+              <p>&copy; {new Date().getFullYear()} REALM Group Freight. All rights reserved. Part of REALM Group Global.</p>
               <p>5% platform fee · Escrow via Stripe · AFIA quality grading</p>
             </div>
           </div>
