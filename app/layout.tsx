@@ -95,7 +95,7 @@ export default function RootLayout({
             </div>
             <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between gap-2 text-xs">
               <p>&copy; {new Date().getFullYear()} REALM Group Freight. All rights reserved. Part of REALM Group Global.</p>
-              <p>5% platform fee · Escrow via Stripe · AFIA quality grading</p>
+              <p>5% platform fee · Held in trust via Stripe · AFIA quality grading</p>
             </div>
           </div>
         </footer>

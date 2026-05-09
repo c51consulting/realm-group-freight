@@ -5,14 +5,14 @@ import { APP_NAME } from '@/lib/constants';
 export const metadata: Metadata = {
   title: 'REALM Group Freight — Australia\'s Agricultural Marketplace',
   description:
-    'Buy and sell hay, grain, silage, livestock, and equipment across Australia. Verified quality testing, integrated freight, and secure escrow payments.',
+    'Buy and sell hay, grain, silage, livestock, and equipment across Australia. Verified quality testing, integrated freight, and secure payments held in trust.',
   keywords: [
     'hay marketplace Australia',
     'grain trading platform',
     'livestock marketplace',
     'agricultural equipment',
     'farm fodder marketplace',
-    'escrow payments agriculture',
+    'payments held in trust agriculture',
   ],
 };
 
@@ -54,7 +54,7 @@ const CATEGORIES = [
 const TRUST_ITEMS = [
   {
     icon: '🔒',
-    title: 'Secure Escrow Payments',
+    title: 'Secure — Funds Held in Trust',
     desc: 'Funds are held in trust by Stripe until delivery is verified. Sellers receive payment only after the buyer confirms receipt. 5% platform fee applies.',
   },
   {
@@ -79,7 +79,7 @@ const HOW_IT_WORKS = [
   { step: '2', title: 'Post or browse', desc: 'List your product with quality grade, price, and location — or browse listings by category, region, and quality.' },
   { step: '3', title: 'Make or receive an offer', desc: 'Negotiate via offers or accept a fixed price. All offers are tracked and timestamped.' },
   { step: '4', title: 'Arrange freight', desc: 'Organise your own transport or use our integrated freight marketplace. Weighbridge data is captured at load.' },
-  { step: '5', title: 'Payment held in escrow', desc: 'Buyer\'s funds are held securely by Stripe until delivery is confirmed. No risk on either side.' },
+  { step: '5', title: 'Funds held in trust', desc: 'Buyer\'s funds are held in trust by Stripe until delivery is confirmed. No risk on either side.' },
   { step: '6', title: 'Confirm and complete', desc: 'Buyer confirms delivery and quality. Funds released to seller. Both parties rate the transaction.' },
 ];
 
@@ -105,7 +105,7 @@ export default function HomePage() {
             </h1>
             <p className="mt-5 text-xl text-brand-100 leading-relaxed max-w-2xl">
               Buy and sell hay, grain, silage, livestock, and equipment across Australia —
-              with verified quality testing, integrated freight, and secure escrow payments.
+              with verified quality testing, integrated freight, and secure payments held in trust.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
