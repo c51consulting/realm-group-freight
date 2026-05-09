@@ -1,12 +1,15 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
+// Public browse routes — no auth required:
+// /listings, /livestock, /equipment, /freight (browse)
+// Auth required only for transactional/personal routes:
 const protectedRoutes = [
   '/dashboard',
-  '/listings',
-  '/livestock',
-  '/equipment',
-  '/freight',
+  '/listings/create',
+  '/livestock/create',
+  '/equipment/create',
+  '/freight/create',
   '/quality',
   '/offers',
   '/orders',
