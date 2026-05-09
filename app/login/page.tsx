@@ -20,6 +20,13 @@ export default function LoginPage() {
   const redirectTo = searchParams.get('redirectTo') ?? '/dashboard'
   const supabase = createClient()
 
+  // Context line based on redirectTo
+  const getContextLine = () => {
+    if (redirectTo.includes('create')) return 'Sign in to post a listing'
+    if (redirectTo.includes('listings')) return 'Sign in to browse all listings'
+    return 'Access your marketplace account'
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -64,64 +71,109 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        {/* Branding */}
+        <div className="flex flex-col items-center text-center">
+          {/* Logo */}
+          <div className="mb-4">
+            <svg
+              className="w-10 h-10"
+              viewBox="0 0 40 40"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <circle cx="20" cy="20" r="20" className="fill-brand-500" />
+              <path
+                d="M20 8v24M13 13c0 0 2.5 2.5 7 2.5s7-2.5 7-2.5M13 20c0 0 2.5 2.5 7 2.5s7-2.5 7-2.5"
+                stroke="white"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+          <p className="text-xl font-bold text-gray-900 tracking-tight">REALM Group Freight</p>
+          <h2 className="mt-3 text-2xl font-bold text-gray-900">
             Sign in to your account
           </h2>
+          <p className="mt-1 text-base text-gray-500">{getContextLine()}</p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+
+        <form className="mt-4 space-y-5" onSubmit={handleSubmit}>
+          {/* Yellow banner for create redirects */}
+          {redirectTo.includes('create') && (
+            <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-4">
+              <p className="text-sm text-yellow-800">
+                Create a free account or sign in to post your listing.{' '}
+                <Link
+                  href={`/register?redirectTo=${encodeURIComponent(redirectTo)}`}
+                  className="font-semibold underline hover:text-yellow-900"
+                >
+                  Register instead →
+                </Link>
+              </p>
+            </div>
+          )}
+
           {message && (
-            <div className="rounded-md bg-brand-50 p-4">
+            <div className="rounded-lg bg-brand-50 p-4">
               <p className="text-sm font-medium text-brand-800">{message}</p>
             </div>
           )}
           {info && (
-            <div className="rounded-md bg-green-50 p-4">
+            <div className="rounded-lg bg-green-50 p-4">
               <p className="text-sm font-medium text-green-800">{info}</p>
             </div>
           )}
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
+            <div className="rounded-lg bg-red-50 p-4">
               <p className="text-sm font-medium text-red-800">{error}</p>
             </div>
           )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">Email address</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">Password</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+
+          {/* Email input — separated, with visible label */}
+          <div>
+            <label htmlFor="email" className="block text-base font-medium text-gray-700 mb-1">
+              Email address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 text-base focus:outline-none focus:ring-brand-500 focus:border-brand-500 shadow-sm"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
+
+          {/* Password input — separated, with visible label */}
+          <div>
+            <label htmlFor="password" className="block text-base font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 text-base focus:outline-none focus:ring-brand-500 focus:border-brand-500 shadow-sm"
+              placeholder="Your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-brand-500 hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 transition-colors"
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-lg text-white bg-brand-500 hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 transition-colors min-h-[52px]"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
+
           {showResend && (
             <button
               type="button"
@@ -131,6 +183,7 @@ export default function LoginPage() {
               Resend confirmation email
             </button>
           )}
+
           <div className="flex items-center justify-between text-sm">
             <Link href="/forgot-password" className="font-medium text-brand-600 hover:text-brand-500">
               Forgot password?
