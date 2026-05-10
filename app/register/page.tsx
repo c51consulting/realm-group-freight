@@ -61,8 +61,8 @@ export default function RegisterPage() {
         return
       }
 
-      router.push('/dashboard')
-      router.refresh()
+      // Hard redirect ensures session cookie is sent in the next server request
+      window.location.href = '/dashboard'
     } catch (err: any) {
       setError(err?.message || 'Unexpected error. Please try again.')
     } finally {

@@ -1,7 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-// No-op stub client for when Supabase is unavailable
+// Minimal stub for when Supabase env vars are unavailable (e.g. during static analysis)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const createStubClient = () => ({
   auth: {
     signInWithPassword: async () => ({ data: null, error: null }),
@@ -9,10 +11,20 @@ const createStubClient = () => ({
     signOut: async () => ({ data: null, error: null }),
     getUser: async () => ({ data: { user: null }, error: null }),
     exchangeCodeForSession: async () => ({ data: null, error: null }),
+    resend: async () => ({ data: null, error: null }),
   },
-})
+  from: () => ({
+    select: () => ({ data: null, error: null, count: 0 }),
+    insert: () => ({ data: null, error: null }),
+    update: () => ({ data: null, error: null }),
+    delete: () => ({ data: null, error: null }),
+    upsert: () => ({ data: null, error: null }),
+  }),
+  storage: { from: () => ({ upload: async () => ({ data: null, error: null }), getPublicUrl: () => ({ data: { publicUrl: '' } }) }) },
+  rpc: async () => ({ data: null, error: null }),
+}) as unknown as SupabaseClient<any>
 
-export const createClient = async () => {
+export const createClient = async (): Promise<SupabaseClient<any>> => {
   // Return stub if env vars are missing
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return createStubClient()
@@ -35,14 +47,13 @@ export const createClient = async () => {
                 cookieStore.set(name, value, options)
               )
             } catch {
-              // Handle cookie setting errors in read-only contexts
+              // Ignore cookie errors in read-only server contexts
             }
           },
         },
       }
-    )
+    ) as SupabaseClient<any>
   } catch (error) {
-    // If client creation fails, return stub
     console.warn('Failed to create Supabase server client:', error)
     return createStubClient()
   }

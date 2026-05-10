@@ -46,8 +46,9 @@ export default function LoginPage() {
           setError(error.message)
         }
       } else {
-        router.push(redirectTo)
-        router.refresh()
+        // Hard redirect ensures session cookies are included in the
+        // server request — Next.js RSC fetches can miss freshly-set cookies
+        window.location.href = redirectTo
       }
     } catch {
       setError('An unexpected error occurred. Please try again.')
