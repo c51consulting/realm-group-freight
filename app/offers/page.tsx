@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { OFFER_STATUS_LABELS, MATERIAL_TYPE_LABELS } from '@/lib/constants';
+import { OFFER_STATUS_LABELS, MATERIAL_TYPE_LABELS, UNIT_TYPE_LABELS } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Offers',
@@ -148,7 +148,9 @@ export default async function OffersPage({ searchParams }: PageProps) {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-gray-100 text-sm">
                   <div>
                     <p className="text-xs text-gray-500">Quantity</p>
-                    <p className="font-medium text-gray-900">{offer.quantity} {listing?.unit_type || 'units'}</p>
+                    <p className="font-medium text-gray-900">
+                      {offer.quantity} {listing?.unit_type ? (UNIT_TYPE_LABELS[listing.unit_type as keyof typeof UNIT_TYPE_LABELS] || listing.unit_type) : 'units'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Price/Unit</p>

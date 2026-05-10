@@ -101,7 +101,7 @@ export default function HomePage() {
               Part of the REALM Group ecosystem
             </span>
             <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
-              Australia&apos;s Agricultural<br />Marketplace
+              Australia&apos;s Agricultural Marketplace
             </h1>
             <p className="mt-5 text-xl text-brand-100 leading-relaxed max-w-2xl">
               Buy and sell hay, grain, silage, livestock, and equipment across Australia —
