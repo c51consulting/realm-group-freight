@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { AU_STATES } from '@/lib/constants';
+import { AU_STATES, UNIT_TYPE_LABELS, MATERIAL_TYPE_LABELS } from '@/lib/constants';
 import { createClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = {
@@ -153,17 +153,17 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
               <Link key={listing.id} href={`/listings/${listing.id}`}
                 className="card p-5 flex flex-col gap-3 min-h-[200px] hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between">
-                  <span className="badge badge-blue capitalize">{listing.material_type?.replace(/_/g, ' ')}</span>
-                  <span className={`badge ${listing.type === 'sell' ? 'badge-green' : 'badge-yellow'}`}>
-                    {listing.type === 'sell' ? 'Selling' : 'Buying'}
+                  <span className="badge badge-blue">{MATERIAL_TYPE_LABELS[listing.material_type as keyof typeof MATERIAL_TYPE_LABELS] || listing.material_type}</span>
+                  <span className={`badge ${listing.type === 'sell' ? 'badge-green' : listing.type === 'freight_only' ? 'badge-blue' : 'badge-yellow'}`}>
+                    {listing.type === 'sell' ? 'Selling' : listing.type === 'freight_only' ? 'Freight' : 'Buying'}
                   </span>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 leading-snug">{listing.title}</h3>
                 <p className="text-xl font-bold text-brand-700">
-                  {listing.price_per_unit ? `$${Number(listing.price_per_unit).toLocaleString()}/${listing.unit_label || listing.unit_type || 'tonne'}` : 'Price on request'}
+                  {listing.price_per_unit ? `$${Number(listing.price_per_unit).toLocaleString()}/${UNIT_TYPE_LABELS[listing.unit_type as keyof typeof UNIT_TYPE_LABELS] || listing.unit_type || 'unit'}` : 'Price on request'}
                 </p>
                 {listing.quantity_available && (
-                  <p className="text-base text-gray-600">{listing.quantity_available} {listing.unit_label || listing.unit_type}</p>
+                  <p className="text-base text-gray-600">{listing.quantity_available} {UNIT_TYPE_LABELS[listing.unit_type as keyof typeof UNIT_TYPE_LABELS] || listing.unit_type}</p>
                 )}
                 {listing.pickup_address && (
                   <p className="text-base text-gray-500">📍 {typeof listing.pickup_address === 'object'
@@ -172,7 +172,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
                   </p>
                 )}
                 {listing.quality_level && (
-                  <span className="badge badge-gray capitalize self-start">{listing.quality_level} quality</span>
+                  <span className="badge badge-gray self-start">{listing.quality_level === 'verified' ? 'Verified Quality' : listing.quality_level === 'performance' ? 'Performance Quality' : 'Basic Quality'}</span>
                 )}
               </Link>
             ))}
