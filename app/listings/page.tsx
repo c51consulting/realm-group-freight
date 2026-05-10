@@ -52,16 +52,16 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     const supabase = await createClient();
     let query = (supabase as any)
       .from('listings')
-      .select('id, title, material_type, listing_type, pricing_type, quality_level, quantity, unit, price_per_unit, suburb, state, status, created_at')
+      .select('id, title, material_type, type, pricing_type, quality_level, quantity_available, unit_type, unit_label, price_per_unit, pickup_address, status, created_at')
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(48);
 
     if (category) query = query.eq('material_type', category);
-    if (state) query = query.eq('state', state);
     if (price) query = query.eq('pricing_type', price);
-    if (listingType) query = query.eq('listing_type', listingType === 'sell' ? 'sell' : 'buy');
+    if (listingType) query = query.eq('type', listingType === 'sell' ? 'sell' : 'buy');
     if (search) query = query.ilike('title', `%${search}%`);
+    // Note: state filter requires pickup_address->>'state' — skipped for now
 
     const { data, error } = await query;
     if (error) {
@@ -153,17 +153,24 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
               <Link key={listing.id} href={`/listings/${listing.id}`}
                 className="card p-5 flex flex-col gap-3 min-h-[200px] hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between">
-                  <span className="badge badge-blue capitalize">{listing.material_type?.replace('_', ' ')}</span>
-                  <span className={`badge ${listing.listing_type === 'sell' ? 'badge-green' : 'badge-yellow'}`}>
-                    {listing.listing_type === 'sell' ? 'Selling' : 'Buying'}
+                  <span className="badge badge-blue capitalize">{listing.material_type?.replace(/_/g, ' ')}</span>
+                  <span className={`badge ${listing.type === 'sell' ? 'badge-green' : 'badge-yellow'}`}>
+                    {listing.type === 'sell' ? 'Selling' : 'Buying'}
                   </span>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 leading-snug">{listing.title}</h3>
                 <p className="text-xl font-bold text-brand-700">
-                  {listing.price_per_unit ? `$${listing.price_per_unit.toLocaleString()}/${listing.unit || 'tonne'}` : 'Price on request'}
+                  {listing.price_per_unit ? `$${Number(listing.price_per_unit).toLocaleString()}/${listing.unit_label || listing.unit_type || 'tonne'}` : 'Price on request'}
                 </p>
-                {listing.quantity && <p className="text-base text-gray-600">{listing.quantity} {listing.unit}</p>}
-                <p className="text-base text-gray-500">📍 {listing.suburb ? `${listing.suburb}, ` : ''}{listing.state}</p>
+                {listing.quantity_available && (
+                  <p className="text-base text-gray-600">{listing.quantity_available} {listing.unit_label || listing.unit_type}</p>
+                )}
+                {listing.pickup_address && (
+                  <p className="text-base text-gray-500">📍 {typeof listing.pickup_address === 'object'
+                    ? [listing.pickup_address.suburb, listing.pickup_address.state].filter(Boolean).join(', ')
+                    : listing.pickup_address}
+                  </p>
+                )}
                 {listing.quality_level && (
                   <span className="badge badge-gray capitalize self-start">{listing.quality_level} quality</span>
                 )}
