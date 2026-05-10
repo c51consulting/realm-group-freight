@@ -60,8 +60,8 @@ export async function getListings(
   filters: ListingFilters = {},
 ): Promise<PaginatedResponse<Listing>> {
   const {
-    materialType,
-    qualityLevel,
+    material_type: materialType,
+    quality_level: qualityLevel,
     pricingType,
     minPrice,
     maxPrice,
@@ -77,11 +77,11 @@ export async function getListings(
     .select('*, seller:users(*)', { count: 'exact' })
     .eq('status', 'active')
     .range(from, to)
-    .order('createdAt', { ascending: false });
+    .order('created_at', { ascending: false });
 
-  if (materialType) query = query.eq('materialType', materialType);
-  if (qualityLevel) query = query.eq('qualityLevel', qualityLevel);
-  if (pricingType)  query = query.eq('pricingType', pricingType);
+  if (materialType) query = query.eq('material_type', materialType);
+  if (qualityLevel) query = query.eq('quality_level', qualityLevel);
+  if (pricingType)  query = query.eq('pricing_type', pricingType);
   if (minPrice)     query = query.gte('pricePerUnit', minPrice);
   if (maxPrice)     query = query.lte('pricePerUnit', maxPrice);
   if (search)       query = query.ilike('title', `%${search}%`);
@@ -162,7 +162,7 @@ export async function getFreightJobs(
     .from('freight_jobs')
     .select('*, poster:users!posterId(*), carrier:users!carrierId(*)', { count: 'exact' })
     .range(from, to)
-    .order('createdAt', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (status) query = query.eq('status', status);
 
@@ -232,7 +232,7 @@ export async function getQualityTiers(
     .from('quality_tiers')
     .select('*, listing:listings(*)', { count: 'exact' })
     .range(from, to)
-    .order('createdAt', { ascending: false });
+    .order('created_at', { ascending: false });
 
   assertOk(data, error, 'getQualityTiers');
 
@@ -257,7 +257,7 @@ export async function getOffers(
     .from('offers')
     .select('*, listing:listings(*), buyer:users(*)', { count: 'exact' })
     .range(from, to)
-    .order('createdAt', { ascending: false });
+    .order('created_at', { ascending: false });
 
   assertOk(data, error, 'getOffers');
 
@@ -320,7 +320,7 @@ export async function getOrders(
       count: 'exact',
     })
     .range(from, to)
-    .order('createdAt', { ascending: false });
+    .order('created_at', { ascending: false });
 
   assertOk(data, error, 'getOrders');
 
