@@ -123,7 +123,7 @@ export default function CreateListingPage() {
       <form className="space-y-8" onSubmit={handleSubmit}>
         <section className="card p-6">
           <h2 className="font-semibold text-gray-900 mb-4">Listing Type</h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { value: 'sell', label: 'Selling', desc: 'I have stock to sell' },
               { value: 'buy', label: 'Buying', desc: 'I want to buy' },
