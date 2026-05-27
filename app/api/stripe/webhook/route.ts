@@ -155,8 +155,13 @@ export async function POST(req: Request) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         const orderId = session.metadata?.orderId;
+        const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-        if (orderId) {
+        if (orderId && !UUID_RE.test(orderId)) {
+          console.warn(
+            `checkout.session.completed has non-UUID orderId metadata: ${orderId} (session ${session.id}). Skipping DB update.`
+          );
+        } else if (orderId) {
           const { error } = await supabase
             .from('orders')
             .update({
