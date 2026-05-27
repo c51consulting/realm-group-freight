@@ -15,6 +15,7 @@ const QUICK_ACTIONS = [
   { label: 'Browse Listings', href: '/listings', icon: '🌾' },
   { label: 'Browse Livestock', href: '/livestock', icon: '🦬' },
   { label: 'View Orders', href: '/orders', icon: '📦' },
+  { label: 'Become a Carrier', href: '/carrier/onboard', icon: '🚚' },
 ];
 
 export default async function DashboardPage() {
