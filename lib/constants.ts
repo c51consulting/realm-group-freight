@@ -180,6 +180,7 @@ export const NAV_LINKS = [
   { href: '/quality', label: 'Feed Tests' },
   { href: '/offers', label: 'Offers' },
   { href: '/orders', label: 'Orders' },
+  { href: '/carrier/dashboard', label: 'For Carriers' },
 ] as const;
 
 export const DEFAULT_PAGE_SIZE = 20;
