@@ -13,11 +13,14 @@ import {
 } from '@/lib/constants';
 import { supabase } from '@/lib/supabase';
 
+type ListingMode = 'list' | 'sell' | 'auction';
+
 export default function CreateListingPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [photos, setPhotos] = useState<(File | null)[]>([null, null, null]);
+  const [listingMode, setListingMode] = useState<ListingMode>('sell');
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,15 +37,18 @@ export default function CreateListingPage() {
       return v === null || v === '' ? undefined : String(v);
     };
 
+    const mode = listingMode; // 'list' | 'sell' | 'auction'
+
     const payload: Record<string, unknown> = {
       type: str('type') ?? 'sell',
+      listingMode: mode,
       materialType: str('materialType'),
       materialSubtype: str('materialSubtype'),
       title: str('title'),
       description: str('description'),
       unitType: str('unitType'),
-      pricingType: str('pricingType'),
-      pricePerUnit: num('pricePerUnit'),
+      pricingType: mode === 'auction' ? 'auction' : (mode === 'list' ? 'offers' : 'fixed'),
+      pricePerUnit: mode === 'sell' ? num('pricePerUnit') : (mode === 'list' ? num('pricePerUnit') : undefined),
       quantityAvailable: num('quantityAvailable'),
       minimumOrder: num('minimumOrder'),
       estimatedWeightPerUnit: num('estimatedWeightPerUnit'),
@@ -57,6 +63,37 @@ export default function CreateListingPage() {
       freightIncluded: fd.get('freightIncluded') === 'on',
       loadingAvailable: fd.get('loadingAvailable') === 'on',
     };
+
+    // Auction-only fields
+    if (mode === 'auction') {
+      const startsRaw = str('auctionStartsAt');
+      const endsRaw = str('auctionEndsAt');
+      const startingPrice = num('auctionStartingPrice');
+      if (!startsRaw || !endsRaw) {
+        setError('Auction start and end times are required');
+        setSubmitting(false);
+        return;
+      }
+      if (startingPrice == null || startingPrice <= 0) {
+        setError('Starting price is required and must be greater than 0');
+        setSubmitting(false);
+        return;
+      }
+      if (new Date(endsRaw) <= new Date(startsRaw)) {
+        setError('Auction end time must be after start time');
+        setSubmitting(false);
+        return;
+      }
+      payload.auctionStartsAt = new Date(startsRaw).toISOString();
+      payload.auctionEndsAt = new Date(endsRaw).toISOString();
+      payload.auctionStartingPrice = startingPrice;
+      const reserve = num('auctionReservePrice');
+      const buyNow = num('auctionBuyNowPrice');
+      const increment = num('auctionIncrement');
+      if (reserve != null) payload.auctionReservePrice = reserve;
+      if (buyNow != null) payload.auctionBuyNowPrice = buyNow;
+      payload.auctionIncrement = increment != null && increment > 0 ? increment : 10;
+    }
     // Validate at least one photo and upload to Supabase Storage
     const files = photos.filter((f): f is File => !!f);
     if (files.length === 0) {
@@ -137,6 +174,81 @@ export default function CreateListingPage() {
             ))}
           </div>
         </section>
+
+        <section className="card p-6">
+          <h2 className="font-semibold text-gray-900 mb-1">How do you want to sell it?</h2>
+          <p className="text-xs text-gray-500 mb-4">Pick the flow that matches your goal. You can switch later.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {([
+              { value: 'list', label: 'List It', desc: 'Show in marketplace, take offers/contact — no instant buy.' },
+              { value: 'sell', label: 'Sell It', desc: 'Fixed price, instant Stripe checkout. Fastest cash.' },
+              { value: 'auction', label: 'Auction It', desc: 'Buyers bid, highest wins at close. Best for hot stock.' },
+            ] as const).map(({ value, label, desc }) => (
+              <label key={value} className={`flex flex-col gap-1 p-3 rounded-lg border cursor-pointer transition ${listingMode === value ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:border-brand-400'}`}>
+                <input
+                  type="radio"
+                  name="listingMode"
+                  value={value}
+                  checked={listingMode === value}
+                  onChange={() => setListingMode(value as ListingMode)}
+                  className="sr-only"
+                />
+                <span className="font-semibold text-sm text-gray-900">{label}</span>
+                <span className="text-xs text-gray-500">{desc}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {listingMode === 'auction' && (
+          <section className="card p-6 space-y-4 border-l-4 border-brand-500">
+            <div>
+              <h2 className="font-semibold text-gray-900">Auction Settings</h2>
+              <p className="text-xs text-gray-500 mt-1">English ascending auction with a hard close at the end time. Highest bid that meets your reserve wins and is auto-converted to a paid-pending order.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="auctionStartsAt" className="label">Starts At *</label>
+                <input id="auctionStartsAt" name="auctionStartsAt" type="datetime-local" required className="input" />
+              </div>
+              <div>
+                <label htmlFor="auctionEndsAt" className="label">Ends At *</label>
+                <input id="auctionEndsAt" name="auctionEndsAt" type="datetime-local" required className="input" />
+              </div>
+              <div>
+                <label htmlFor="auctionStartingPrice" className="label">Starting Price (AUD) *</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input id="auctionStartingPrice" name="auctionStartingPrice" type="number" min="0" step="0.01" required placeholder="e.g. 500" className="input pl-7" />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="auctionIncrement" className="label">Bid Increment (AUD)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input id="auctionIncrement" name="auctionIncrement" type="number" min="1" step="1" defaultValue={10} className="input pl-7" />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Minimum step between bids. Defaults to $10.</p>
+              </div>
+              <div>
+                <label htmlFor="auctionReservePrice" className="label">Reserve Price (AUD)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input id="auctionReservePrice" name="auctionReservePrice" type="number" min="0" step="0.01" placeholder="Optional" className="input pl-7" />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Hidden from bidders. If unmet at close, auction ends with no sale.</p>
+              </div>
+              <div>
+                <label htmlFor="auctionBuyNowPrice" className="label">Buy-Now Price (AUD)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input id="auctionBuyNowPrice" name="auctionBuyNowPrice" type="number" min="0" step="0.01" placeholder="Optional" className="input pl-7" />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Optional. Lets a buyer end the auction instantly at this price.</p>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="card p-6 space-y-4">
           <h2 className="font-semibold text-gray-900">Material Details</h2>

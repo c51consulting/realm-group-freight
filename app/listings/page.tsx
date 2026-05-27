@@ -14,6 +14,7 @@ interface ListingsPageProps {
     state?: string;
     price?: string;
     listingType?: string;
+    mode?: string;
     search?: string;
     page?: string;
   };
@@ -42,7 +43,7 @@ const EXAMPLE_LISTINGS = [
 ];
 
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
-  const { category, state, price, listingType, search } = searchParams ?? {};
+  const { category, state, price, listingType, mode, search } = searchParams ?? {};
 
   // ── Query real listings from DB ──
   let dbListings: any[] = [];
@@ -52,7 +53,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     const supabase = await createClient();
     let query = (supabase as any)
       .from('listings')
-      .select('id, title, material_type, type, pricing_type, quality_level, quantity_available, unit_type, unit_label, price_per_unit, pickup_address, status, created_at')
+      .select('id, title, material_type, type, pricing_type, quality_level, quantity_available, unit_type, unit_label, price_per_unit, pickup_address, status, created_at, listing_mode, auction_ends_at, auction_current_bid, auction_starting_price, auction_status, auction_bid_count')
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(48);
@@ -60,6 +61,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     if (category) query = query.eq('material_type', category);
     if (price) query = query.eq('pricing_type', price);
     if (listingType) query = query.eq('type', listingType === 'sell' ? 'sell' : 'buy');
+    if (mode) query = query.eq('listing_mode', mode);
     if (search) query = query.ilike('title', `%${search}%`);
     // Note: state filter requires pickup_address->>'state' — skipped for now
 
@@ -76,7 +78,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   const hasRealListings = dbListings.length > 0;
 
   const buildUrl = (params: Record<string, string | undefined>) => {
-    const merged = { category, state, price, listingType, search, ...params };
+    const merged = { category, state, price, listingType, mode, search, ...params };
     const qs = Object.entries(merged)
       .filter(([, v]) => v)
       .map(([k, v]) => `${k}=${encodeURIComponent(v!)}`)
@@ -95,6 +97,29 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
         <Link href="/listings/create" className="btn-primary self-start sm:self-auto py-3 px-6 text-base">
           + Post Listing
         </Link>
+      </div>
+
+      {/* Mode tabs: All / List It / Sell It / Auction It */}
+      <div className="mb-4 border-b border-gray-200">
+        <nav className="-mb-px flex gap-6 overflow-x-auto">
+          {([
+            { value: '', label: 'All listings' },
+            { value: 'sell', label: 'Sell It' },
+            { value: 'list', label: 'List It' },
+            { value: 'auction', label: 'Auctions 🔥' },
+          ] as const).map(({ value, label }) => {
+            const active = (mode ?? '') === value;
+            return (
+              <Link
+                key={value || 'all'}
+                href={buildUrl({ mode: value || undefined })}
+                className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-base transition-colors ${active ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
       {/* Filter bar */}
@@ -139,7 +164,7 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
         {/* Search */}
         <input type="search" placeholder="Search listings — e.g. Lucerne hay…" defaultValue={search} className="input w-full text-base py-3" />
 
-        {(category || state || price || listingType || search) && (
+        {(category || state || price || listingType || mode || search) && (
           <Link href="/listings" className="text-sm text-brand-600 hover:text-brand-800 font-medium">✕ Clear all filters</Link>
         )}
       </div>
@@ -152,16 +177,33 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
             {dbListings.map((listing) => (
               <Link key={listing.id} href={`/listings/${listing.id}`}
                 className="card p-5 flex flex-col gap-3 min-h-[200px] hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span className="badge badge-blue">{MATERIAL_TYPE_LABELS[listing.material_type as keyof typeof MATERIAL_TYPE_LABELS] || listing.material_type}</span>
-                  <span className={`badge ${listing.type === 'sell' ? 'badge-green' : listing.type === 'freight_only' ? 'badge-blue' : 'badge-yellow'}`}>
-                    {listing.type === 'sell' ? 'Selling' : listing.type === 'freight_only' ? 'Freight' : 'Buying'}
-                  </span>
+                  {listing.listing_mode === 'auction' ? (
+                    <span className="badge bg-amber-100 text-amber-900 border border-amber-200">🔥 Auction</span>
+                  ) : (
+                    <span className={`badge ${listing.type === 'sell' ? 'badge-green' : listing.type === 'freight_only' ? 'badge-blue' : 'badge-yellow'}`}>
+                      {listing.type === 'sell' ? 'Selling' : listing.type === 'freight_only' ? 'Freight' : 'Buying'}
+                    </span>
+                  )}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 leading-snug">{listing.title}</h3>
-                <p className="text-xl font-bold text-brand-700">
-                  {listing.price_per_unit ? `$${Number(listing.price_per_unit).toLocaleString()}/${UNIT_TYPE_LABELS[listing.unit_type as keyof typeof UNIT_TYPE_LABELS] || listing.unit_type || 'unit'}` : 'Price on request'}
-                </p>
+                {listing.listing_mode === 'auction' ? (
+                  <div>
+                    <p className="text-xl font-bold text-brand-700">
+                      {listing.auction_current_bid != null
+                        ? `$${Number(listing.auction_current_bid).toLocaleString()}`
+                        : listing.auction_starting_price != null
+                          ? `$${Number(listing.auction_starting_price).toLocaleString()} (start)`
+                          : 'No bids'}
+                    </p>
+                    <p className="text-xs text-gray-500">{listing.auction_bid_count || 0} bid{listing.auction_bid_count === 1 ? '' : 's'} · ends {listing.auction_ends_at ? new Date(listing.auction_ends_at).toLocaleString('en-AU', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '—'}</p>
+                  </div>
+                ) : (
+                  <p className="text-xl font-bold text-brand-700">
+                    {listing.price_per_unit ? `$${Number(listing.price_per_unit).toLocaleString()}/${UNIT_TYPE_LABELS[listing.unit_type as keyof typeof UNIT_TYPE_LABELS] || listing.unit_type || 'unit'}` : 'Price on request'}
+                  </p>
+                )}
                 {listing.quantity_available && (
                   <p className="text-base text-gray-600">{listing.quantity_available} {UNIT_TYPE_LABELS[listing.unit_type as keyof typeof UNIT_TYPE_LABELS] || listing.unit_type}</p>
                 )}
