@@ -174,6 +174,7 @@ export const FREIGHT_JOB_STATUS_LABELS: Record<FreightJobStatus, string> = {
 export const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/listings', label: 'Listings' },
+  { href: '/listings?mode=auction', label: 'Auctions' },
   { href: '/livestock', label: 'Livestock' },
     { href: '/equipment', label: 'Equipment' },
   { href: '/freight', label: 'Freight' },

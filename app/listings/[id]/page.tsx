@@ -11,6 +11,7 @@ import {
   AU_STATES,
 } from '@/lib/constants';
 import MakeOfferForm from './MakeOfferForm';
+import AuctionPanel from './AuctionPanel';
 
 interface Props {
   params: { id: string };
@@ -293,6 +294,21 @@ export default async function ListingDetailPage({ params }: Props) {
               <div className="mt-4 p-3 bg-gray-50 rounded-lg text-center">
                 <p className="text-sm text-gray-500 capitalize">Listing is {listing.status}</p>
               </div>
+            ) : listing.listing_mode === 'auction' ? (
+              <AuctionPanel
+                listingId={listing.id}
+                sellerId={listing.seller_id}
+                currentUserId={user?.id ?? null}
+                startsAt={listing.auction_starts_at}
+                endsAt={listing.auction_ends_at}
+                startingPrice={listing.auction_starting_price ? Number(listing.auction_starting_price) : null}
+                currentBid={listing.auction_current_bid ? Number(listing.auction_current_bid) : null}
+                increment={listing.auction_increment ? Number(listing.auction_increment) : 10}
+                buyNowPrice={listing.auction_buy_now_price ? Number(listing.auction_buy_now_price) : null}
+                status={listing.auction_status}
+                bidCount={listing.auction_bid_count}
+                isWinner={!!user && user.id === listing.auction_winner_id}
+              />
             ) : isLoggedIn ? (
               <MakeOfferForm listingId={listing.id} sellerId={listing.seller_id} pricePerUnit={listing.price_per_unit} unitLabel={unitLabel} />
             ) : (

@@ -26,6 +26,13 @@ const CAMEL_TO_SNAKE: Record<string, string> = {
   createdAt: 'created_at',
   updatedAt: 'updated_at',
   sellerId: 'seller_id',
+  listingMode: 'listing_mode',
+  auctionStartsAt: 'auction_starts_at',
+  auctionEndsAt: 'auction_ends_at',
+  auctionStartingPrice: 'auction_starting_price',
+  auctionReservePrice: 'auction_reserve_price',
+  auctionBuyNowPrice: 'auction_buy_now_price',
+  auctionIncrement: 'auction_increment',
 };
 
 const ALLOWED_DB_COLUMNS = new Set([
@@ -34,6 +41,8 @@ const ALLOWED_DB_COLUMNS = new Set([
   'quantity_unit','minimum_order','estimated_weight_per_unit','pricing_type','freight_included',
   'delivery_radius','pickup_address','pickup_lat','pickup_lng','loading_available','images',
   'quality_level','expires_at',
+  'listing_mode','auction_starts_at','auction_ends_at','auction_starting_price',
+  'auction_reserve_price','auction_buy_now_price','auction_increment','auction_status',
 ]);
 
 function toDbRow(input: Record<string, any>): Record<string, any> {
@@ -107,7 +116,14 @@ export async function POST(request: NextRequest) {
   // Ensure a public users row exists for this auth user (FK target)
   await supabase.from('users').upsert({ id: user.id, email: user.email }, { onConflict: 'id' });
 
-  const row = toDbRow({ ...body, sellerId: user.id, status: 'active' });
+  // For auction-mode listings, seed status to 'scheduled' and apply increment default
+  const isAuction = body?.listingMode === 'auction';
+  const extras: Record<string, any> = { sellerId: user.id, status: 'active' };
+  if (isAuction) {
+    extras.auction_status = 'scheduled';
+    if (body.auctionIncrement == null) extras.auctionIncrement = 10;
+  }
+  const row = toDbRow({ ...body, ...extras });
 
   const { data, error } = await supabase
     .from('listings')
