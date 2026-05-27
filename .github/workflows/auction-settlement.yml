@@ -1,0 +1,37 @@
+name: Auction settlement cron
+
+# Pokes /api/auctions/close every 5 minutes to settle any auctions whose deadline has passed.
+# Free + reliable — no Railway cron plan required.
+# Requires the repository secret CRON_SECRET to match the same env var in Railway.
+
+on:
+  schedule:
+    # GitHub Actions cron uses UTC. Every 5 minutes.
+    - cron: '*/5 * * * *'
+  workflow_dispatch:  # manual run
+
+jobs:
+  settle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: POST /api/auctions/close
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CRON_SECRET:-}" ]; then
+            echo "::warning::CRON_SECRET secret not set — skipping" && exit 0
+          fi
+          response=$(curl -sS -o /tmp/body -w "%{http_code}" \
+            -X POST \
+            -H "x-cron-secret: $CRON_SECRET" \
+            -H "Content-Type: application/json" \
+            "https://realm-ag-marketplace-production.up.railway.app/api/auctions/close")
+          echo "HTTP $response"
+          cat /tmp/body
+          echo ""
+          if [ "$response" -lt 200 ] || [ "$response" -ge 300 ]; then
+            echo "::error::Settlement endpoint returned $response"
+            exit 1
+          fi
