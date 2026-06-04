@@ -54,8 +54,9 @@ export default async function CarriersDirectoryPage({ searchParams }: CarriersPa
 
   // ── filters ──
   if (state) {
-    // include carriers explicitly tagged with that state OR national ("ALL")
-    query = query.overlaps('region_tags', [state, 'ALL']);
+    // Strict: only carriers explicitly tagged with the chosen state/territory.
+    // National-only carriers (tagged "ALL") surface when no state filter is applied.
+    query = query.contains('region_tags', [state]);
   }
   if (type) {
     // any of the lowercase tags must contain the substring
