@@ -97,10 +97,28 @@ export async function POST(
   // Notify admins (best-effort)
   const adminEmail = process.env.REALM_ADMIN_EMAIL;
   if (adminEmail) {
+    const needsManualReview = !verificationEmail || !/@/.test(verificationEmail);
+    const flag = needsManualReview
+      ? '<p style="background:#FEF3C7;border:1px solid #F59E0B;padding:10px;border-radius:6px;color:#92400E;"><strong>MANUAL REVIEW REQUIRED</strong> \u2014 no verification email on this listing. Please contact the claimant to confirm ownership before approving.</p>'
+      : `<p>Verification link sent to <strong>${escapeHtml(verificationEmail)}</strong>.</p>`;
     await sendEmail({
       to: adminEmail,
-      subject: `[REALM admin] Carrier claim: ${carrier.operator_name}`,
-      html: `<p>${escapeHtml(user.email || user.id)} has submitted a claim on <strong>${escapeHtml(carrier.operator_name)}</strong> as ${escapeHtml(payload.contact_role)} for ${escapeHtml(payload.claimed_business_name)}.</p>`,
+      subject: needsManualReview
+        ? `[REALM admin] MANUAL REVIEW \u2014 Carrier claim: ${carrier.operator_name}`
+        : `[REALM admin] Carrier claim: ${carrier.operator_name}`,
+      html: `
+        <div style="font-family:-apple-system,sans-serif;max-width:560px;color:#111;">
+          <h3 style="margin:0 0 8px;">Carrier claim submitted</h3>
+          ${flag}
+          <table style="font-size:14px;margin-top:12px;">
+            <tr><td style="padding:4px 12px 4px 0;color:#666;">Listing</td><td>${escapeHtml(carrier.operator_name)} (<code>${escapeHtml(carrier.slug)}</code>)</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#666;">Claimed by</td><td>${escapeHtml(payload.claimed_business_name)}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#666;">Role</td><td>${escapeHtml(payload.contact_role)}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#666;">ABN</td><td>${escapeHtml(payload.claimed_abn || '\u2014')}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#666;">User</td><td>${escapeHtml(user.email || user.id)}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0;color:#666;">Notes</td><td>${escapeHtml(payload.evidence_notes || '\u2014')}</td></tr>
+          </table>
+        </div>`,
     });
   }
 
