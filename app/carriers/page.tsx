@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import CarrierDirectoryDisclaimer from '@/components/carrier/CarrierDirectoryDisclaimer';
 import { AU_STATES } from '@/lib/constants';
 
 export const metadata: Metadata = {
@@ -272,6 +273,8 @@ export default async function CarriersDirectoryPage({ searchParams }: CarriersPa
           ))}
         </div>
       )}
+
+      <CarrierDirectoryDisclaimer variant="index" />
 
       {/* Footer note */}
       <div className="mt-10 rounded-lg bg-gray-50 border border-gray-200 p-5 text-sm text-gray-600">

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import CarrierContactForm from '@/components/carrier/CarrierContactForm';
 import CarrierClaimButton from '@/components/carrier/CarrierClaimButton';
+import CarrierDirectoryDisclaimer from '@/components/carrier/CarrierDirectoryDisclaimer';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -191,6 +192,8 @@ export default async function CarrierDetailPage({ params }: PageProps) {
           )}
         </aside>
       </section>
+
+      <CarrierDirectoryDisclaimer variant="detail" />
 
       {/* Source attribution */}
       {carrier.source_urls && (
