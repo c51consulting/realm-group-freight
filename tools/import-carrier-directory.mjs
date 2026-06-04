@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 /**
  * Import REALM Carrier Network CSV into carrier_directory table.
+ * Uses the Supabase REST API directly via fetch (no SDK dependency).
  *
  * Usage:
  *   NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... \
- *     node tools/import-carrier-directory.mjs ./data/REALM_Carrier_Network_Australia_verified_contacts.csv
+ *     node tools/import-carrier-directory.mjs ./data/REALM_Carrier_Network_Australia.csv
  *
  * Idempotent: upserts on realm_record_id.
  */
 
-import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -26,11 +26,7 @@ if (!csvPath) {
   process.exit(1);
 }
 
-const supabase = createClient(SUPABASE_URL, SERVICE_ROLE, {
-  auth: { persistSession: false },
-});
-
-// --- CSV parser (RFC 4180, handles quoted fields with commas/newlines) ---
+// --- CSV parser (RFC 4180) ---
 function parseCSV(text) {
   const rows = [];
   let row = [];
@@ -54,7 +50,6 @@ function parseCSV(text) {
   return rows.filter(r => r.length > 1 || (r.length === 1 && r[0].trim() !== ''));
 }
 
-// --- Parsers for the free-text columns into clean tags ---
 const AU_STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT', 'ACT'];
 
 function parseRegions(s) {
@@ -65,8 +60,7 @@ function parseRegions(s) {
   }
   const tags = new Set();
   for (const st of AU_STATES) {
-    const re = new RegExp(`\\b${st}\\b`);
-    if (re.test(u)) tags.add(st);
+    if (new RegExp(`\\b${st}\\b`).test(u)) tags.add(st);
   }
   return [...tags];
 }
@@ -81,30 +75,13 @@ function parseList(s) {
 }
 
 function slugify(s) {
-  return s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 80);
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
 }
 
-// --- Main ---
 const raw = readFileSync(resolve(csvPath), 'utf8');
 const rows = parseCSV(raw);
 const header = rows.shift();
 const idx = Object.fromEntries(header.map((h, i) => [h.trim(), i]));
-
-const required = [
-  'realm_record_id','operator_name','address','phone','email','digital_contact_type',
-  'website','carrier_type','equipment_and_services','operating_regions','pos_matching_fit',
-  'country','verification_status','confidence','source_urls','research_subject',
-];
-for (const r of required) {
-  if (!(r in idx)) {
-    console.error(`Missing required column: ${r}`);
-    process.exit(1);
-  }
-}
 
 const slugSeen = new Map();
 function uniqueSlug(name) {
@@ -145,15 +122,30 @@ const records = rows.map(r => {
   };
 });
 
-console.log(`Parsed ${records.length} records. Upserting...`);
+console.log(`Parsed ${records.length} records. Upserting via PostgREST...`);
 
-const { data, error } = await supabase
-  .from('carrier_directory')
-  .upsert(records, { onConflict: 'realm_record_id' })
-  .select('id, realm_record_id');
+const endpoint = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/carrier_directory?on_conflict=realm_record_id`;
+const res = await fetch(endpoint, {
+  method: 'POST',
+  headers: {
+    apikey: SERVICE_ROLE,
+    Authorization: `Bearer ${SERVICE_ROLE}`,
+    'Content-Type': 'application/json',
+    Prefer: 'resolution=merge-duplicates,return=representation',
+  },
+  body: JSON.stringify(records),
+});
 
-if (error) {
-  console.error('Upsert error:', error);
+const text = await res.text();
+if (!res.ok) {
+  console.error(`HTTP ${res.status} ${res.statusText}`);
+  console.error(text);
   process.exit(1);
 }
-console.log(`✅ Upserted ${data.length} carriers.`);
+
+let data;
+try { data = JSON.parse(text); } catch { data = []; }
+console.log(`✅ Upserted ${Array.isArray(data) ? data.length : records.length} carriers.`);
+if (Array.isArray(data) && data.length) {
+  console.log('Sample:', data.slice(0, 3).map(d => `${d.realm_record_id} → ${d.slug}`).join(', '));
+}

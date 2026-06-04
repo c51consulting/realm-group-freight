@@ -118,10 +118,12 @@ export async function POST(req: NextRequest) {
       `Reply to this email to respond. View listing: ${profileUrl}`,
     ].filter(Boolean).join('\n');
 
+    const bccList = [payload.sender_email]; // sender gets a copy
+    if (process.env.REALM_ADMIN_EMAIL) bccList.push(process.env.REALM_ADMIN_EMAIL); // admin gets a copy
     emailResult = await sendEmail({
       to: carrierEmail,
       reply_to: payload.sender_email,
-      bcc: payload.sender_email, // sender gets a copy
+      bcc: bccList,
       subject: `[REALM] ${payload.subject}`,
       html,
       text,
