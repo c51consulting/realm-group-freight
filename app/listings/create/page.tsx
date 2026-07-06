@@ -53,7 +53,7 @@ export default function CreateListingPage() {
       minimumOrder: num('minimumOrder'),
       estimatedWeightPerUnit: num('estimatedWeightPerUnit'),
       qualityLevel: str('qualityLevel') ?? 'basic',
-      pickupLocation: {
+      pickupAddress: {
         street: str('street'),
         suburb: str('suburb'),
         state: str('state'),
@@ -127,7 +127,14 @@ export default function CreateListingPage() {
         body: JSON.stringify({ ...payload, images: imageUrls }),      });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || (Array.isArray(data.errors) ? data.errors.join(', ') : null) || ('Request failed (' + res.status + ')'));
+        const validationMessage = Array.isArray(data.errors)
+          ? data.errors.map((item: unknown) => {
+              if (typeof item === 'string') return item;
+              if (item && typeof item === 'object' && 'message' in item) return String((item as { message: unknown }).message);
+              return String(item);
+            }).join(', ')
+          : null;
+        throw new Error(data.error || validationMessage || ('Request failed (' + res.status + ')'));
       }
       const data = await res.json();
       router.push(data && data.id ? '/listings/' + data.id : '/listings');

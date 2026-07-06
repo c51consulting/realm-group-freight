@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { apiClient } from './api';
 import type { ValidationResult } from './validation';
 
 // Generic form hook

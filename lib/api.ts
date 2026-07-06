@@ -60,8 +60,8 @@ export async function getListings(
   filters: ListingFilters = {},
 ): Promise<PaginatedResponse<Listing>> {
   const {
-    material_type: materialType,
-    quality_level: qualityLevel,
+    materialType,
+    qualityLevel,
     pricingType,
     minPrice,
     maxPrice,
@@ -82,8 +82,8 @@ export async function getListings(
   if (materialType) query = query.eq('material_type', materialType);
   if (qualityLevel) query = query.eq('quality_level', qualityLevel);
   if (pricingType)  query = query.eq('pricing_type', pricingType);
-  if (minPrice)     query = query.gte('pricePerUnit', minPrice);
-  if (maxPrice)     query = query.lte('pricePerUnit', maxPrice);
+  if (minPrice)     query = query.gte('price_per_unit', minPrice);
+  if (maxPrice)     query = query.lte('price_per_unit', maxPrice);
   if (search)       query = query.ilike('title', `%${search}%`);
 
   const { data, error, count } = await query;

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { LIVESTOCK_CATEGORY_LABELS, LIVESTOCK_BREED_LABELS, AU_STATE_LABELS } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Livestock Detail',

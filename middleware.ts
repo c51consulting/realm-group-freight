@@ -1,6 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
+type CookieToSet = {
+  name: string
+  value: string
+  options: Record<string, unknown>
+}
+
 // Public browse routes — no auth required:
 // /listings, /livestock, /equipment, /freight (browse)
 // Auth required only for transactional/personal routes:
@@ -44,7 +50,7 @@ export async function middleware(request: NextRequest) {
           getAll() {
             return request.cookies.getAll()
           },
-          setAll(cookiesToSet) {
+          setAll(cookiesToSet: CookieToSet[]) {
             cookiesToSet.forEach(({ name, value }) =>
               request.cookies.set(name, value)
             )

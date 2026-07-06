@@ -58,11 +58,33 @@ export function validateListing(data: Record<string, unknown>): ValidationResult
   if (!data.type || !['sell', 'buy', 'freight_only'].includes(data.type as string)) {
     errors.push({ field: 'type', message: 'Listing type must be sell, buy, or freight_only' });
   }
+  if (data.listingMode && !['list', 'sell', 'auction'].includes(data.listingMode as string)) {
+    errors.push({ field: 'listingMode', message: 'Listing mode must be list, sell, or auction' });
+  }
+  if (data.pricingType && !['fixed', 'offers', 'auction', 'urgent'].includes(data.pricingType as string)) {
+    errors.push({ field: 'pricingType', message: 'Pricing type is invalid' });
+  }
   if (data.pricePerUnit !== undefined && (isNaN(Number(data.pricePerUnit)) || Number(data.pricePerUnit) < 0)) {
     errors.push({ field: 'pricePerUnit', message: 'Price must be a positive number' });
   }
   if (data.quantityAvailable !== undefined && (isNaN(Number(data.quantityAvailable)) || Number(data.quantityAvailable) <= 0)) {
     errors.push({ field: 'quantityAvailable', message: 'Quantity must be greater than zero' });
+  }
+  if (data.listingMode === 'sell' && (data.pricePerUnit === undefined || Number(data.pricePerUnit) <= 0)) {
+    errors.push({ field: 'pricePerUnit', message: 'Sell It listings require a fixed price greater than zero' });
+  }
+  if (data.listingMode === 'auction') {
+    if (!data.auctionStartsAt || !data.auctionEndsAt) {
+      errors.push({ field: 'auctionEndsAt', message: 'Auction start and end times are required' });
+    } else if (new Date(data.auctionEndsAt as string) <= new Date(data.auctionStartsAt as string)) {
+      errors.push({ field: 'auctionEndsAt', message: 'Auction end time must be after start time' });
+    }
+    if (data.auctionStartingPrice === undefined || Number(data.auctionStartingPrice) < 0) {
+      errors.push({ field: 'auctionStartingPrice', message: 'Auction starting price is required' });
+    }
+  }
+  if (!Array.isArray(data.images) || data.images.length === 0) {
+    errors.push({ field: 'images', message: 'At least one listing photo is required' });
   }
 
   return { valid: errors.length === 0, errors };

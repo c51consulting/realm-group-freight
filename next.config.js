@@ -1,12 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Output standalone build for Railway deployment
-  output: 'standalone',
-
-  // Skip type checking during build (fix types incrementally)
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // Output standalone build for Railway deployment. Local Windows builds can set
+  // NEXT_OUTPUT=default to avoid symlink restrictions in standalone tracing.
+  output: process.env.NEXT_OUTPUT === 'default' ? undefined : 'standalone',
 
   // Skip ESLint during build
   eslint: {

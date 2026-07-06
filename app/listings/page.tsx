@@ -62,8 +62,13 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
     if (price) query = query.eq('pricing_type', price);
     if (listingType) query = query.eq('type', listingType === 'sell' ? 'sell' : 'buy');
     if (mode) query = query.eq('listing_mode', mode);
-    if (search) query = query.ilike('title', `%${search}%`);
-    // Note: state filter requires pickup_address->>'state' — skipped for now
+    if (state) query = query.filter('pickup_address->>state', 'eq', state);
+    if (search) {
+      const normalizedSearch = search.trim();
+      if (normalizedSearch) {
+        query = query.or(`title.ilike.%${normalizedSearch}%,description.ilike.%${normalizedSearch}%,material_subtype.ilike.%${normalizedSearch}%`);
+      }
+    }
 
     const { data, error } = await query;
     if (error) {
@@ -137,12 +142,34 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
           })}
         </div>
 
+        {/* Search and state filters */}
+        <form action="/listings" method="get" className="flex flex-wrap gap-3 items-end">
+          {category && <input type="hidden" name="category" value={category} />}
+          {price && <input type="hidden" name="price" value={price} />}
+          {listingType && <input type="hidden" name="listingType" value={listingType} />}
+          {mode && <input type="hidden" name="mode" value={mode} />}
+          <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+            State
+            <select name="state" defaultValue={state ?? ''} className="input max-w-[180px] text-base py-2">
+              <option value="">All states</option>
+              {AU_STATES.map(({ value, label }) => <option key={value} value={value}>{value} - {label}</option>)}
+            </select>
+          </label>
+          <label className="flex min-w-[220px] flex-1 flex-col gap-1 text-sm font-medium text-gray-700">
+            Search
+            <input
+              type="search"
+              name="search"
+              placeholder="Search listings - e.g. Lucerne hay..."
+              defaultValue={search ?? ''}
+              className="input w-full text-base py-3"
+            />
+          </label>
+          <button type="submit" className="btn-primary py-3 px-5 text-base">Apply</button>
+        </form>
+
         {/* Quick filters */}
         <div className="flex flex-wrap gap-3">
-          <select defaultValue={state ?? ''} className="input max-w-[180px] text-base py-2">
-            <option value="">All states</option>
-            {AU_STATES.map(({ value, label }) => <option key={value} value={value}>{value} — {label}</option>)}
-          </select>
           <div className="flex gap-2 flex-wrap">
             {[{ value: '', label: 'Any price' }, { value: 'fixed', label: 'Fixed' }, { value: 'offers', label: 'Offers' }, { value: 'auction', label: 'Auction' }].map(({ value: v, label }) => (
               <Link key={v} href={buildUrl({ price: v || undefined })}
@@ -160,10 +187,6 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
             ))}
           </div>
         </div>
-
-        {/* Search */}
-        <input type="search" placeholder="Search listings — e.g. Lucerne hay…" defaultValue={search} className="input w-full text-base py-3" />
-
         {(category || state || price || listingType || mode || search) && (
           <Link href="/listings" className="text-sm text-brand-600 hover:text-brand-800 font-medium">✕ Clear all filters</Link>
         )}

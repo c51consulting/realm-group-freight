@@ -34,19 +34,48 @@ export default async function OffersPage({ searchParams }: PageProps) {
   if (!user) redirect('/login?redirectTo=/offers');
 
   const status = searchParams?.status || '';
+  const offerSelect = `
+    *,
+    listing:listings!listing_id(id, title, material_type, price_per_unit, unit_type, pickup_address, seller_id)
+  `;
 
-  let query = supabase
+  let buyerQuery = supabase
     .from('offers')
-    .select(`
-      *,
-      listing:listings!listing_id(id, title, material_type, price_per_unit, unit_type, pickup_address)
-    `)
-    .eq('buyer_id', user.id)
-    .order('created_at', { ascending: false });
+    .select(offerSelect)
+    .eq('buyer_id', user.id);
 
-  if (status) query = query.eq('status', status);
+  if (status) buyerQuery = buyerQuery.eq('status', status);
 
-  const { data: offers, error } = await query;
+  const { data: sellerListings, error: listingError } = await supabase
+    .from('listings')
+    .select('id')
+    .eq('seller_id', user.id);
+
+  const sellerListingIds = (sellerListings || []).map((item: { id: string }) => item.id);
+  let sellerOffers: any[] = [];
+  let sellerError: { message: string } | null = null;
+
+  if (sellerListingIds.length > 0) {
+    let sellerQuery = supabase
+      .from('offers')
+      .select(offerSelect)
+      .in('listing_id', sellerListingIds);
+
+    if (status) sellerQuery = sellerQuery.eq('status', status);
+
+    const result = await sellerQuery;
+    sellerOffers = result.data || [];
+    sellerError = result.error;
+  }
+
+  const { data: buyerOffers, error: buyerError } = await buyerQuery;
+  const error = listingError || sellerError || buyerError;
+
+  const offersById = new Map<string, any>();
+  [...(buyerOffers || []), ...sellerOffers].forEach((offer) => offersById.set(offer.id, offer));
+  const offers = [...offersById.values()].sort((a, b) => {
+    return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+  });
 
   const statusTabs = [
     { value: '',          label: 'All' },
@@ -95,7 +124,7 @@ export default async function OffersPage({ searchParams }: PageProps) {
         </div>
       )}
 
-      {!offers || offers.length === 0 ? (
+      {offers.length === 0 ? (
         <div className="card p-12 text-center">
           <div className="text-5xl mb-4">📋</div>
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
@@ -112,6 +141,7 @@ export default async function OffersPage({ searchParams }: PageProps) {
         <div className="space-y-4">
           {offers.map((offer) => {
             const listing = offer.listing as any;
+            const isReceived = listing?.seller_id === user.id;
             const materialLabel = listing?.material_type
               ? MATERIAL_TYPE_LABELS[listing.material_type as keyof typeof MATERIAL_TYPE_LABELS] || listing.material_type
               : '';
@@ -124,6 +154,9 @@ export default async function OffersPage({ searchParams }: PageProps) {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <StatusBadge status={offer.status} />
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${isReceived ? 'bg-purple-50 text-purple-700' : 'bg-blue-50 text-blue-700'}`}>
+                        {isReceived ? 'Received' : 'Made'}
+                      </span>
                       {materialLabel && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-700">
                           {materialLabel}

@@ -1,4 +1,30 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+const createQueryStub = () => {
+  const query = {
+    select: () => query,
+    insert: () => query,
+    update: () => query,
+    delete: () => query,
+    upsert: () => query,
+    eq: () => query,
+    in: () => query,
+    gte: () => query,
+    lte: () => query,
+    ilike: () => query,
+    filter: () => query,
+    or: () => query,
+    order: () => query,
+    limit: () => query,
+    range: () => query,
+    single: async () => ({ data: null, error: null }),
+    maybeSingle: async () => ({ data: null, error: null }),
+    then: (resolve: (value: { data: null; error: null; count: number }) => unknown) =>
+      Promise.resolve({ data: null, error: null, count: 0 }).then(resolve),
+  }
+  return query
+}
 
 // No-op stub client for when Supabase is unavailable
 const createStubClient = () => ({
@@ -7,14 +33,15 @@ const createStubClient = () => ({
     signUp: async () => ({ data: null, error: null }),
     signOut: async () => ({ data: null, error: null }),
     getUser: async () => ({ data: { user: null }, error: null }),
+    getSession: async () => ({ data: { session: null }, error: null }),
+    resetPasswordForEmail: async () => ({ data: null, error: null }),
+    resend: async () => ({ data: null, error: null }),
+    updateUser: async () => ({ data: null, error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
   },
-  from: () => ({
-    select: () => ({ data: null, error: null }),
-    insert: () => ({ data: null, error: null }),
-    update: () => ({ data: null, error: null }),
-    delete: () => ({ data: null, error: null }),
-  }),
-})
+  from: createQueryStub,
+  storage: { from: () => ({ upload: async () => ({ data: null, error: null }), getPublicUrl: () => ({ data: { publicUrl: '' } }) }) },
+}) as unknown as SupabaseClient<any>
 
 export function createClient() {
   // Return stub if env vars are missing
@@ -42,7 +69,7 @@ let _supabase: ReturnType<typeof createClient> | null = null
 export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
   get(_target, prop) {
     if (!_supabase) _supabase = createClient()
-    return (_supabase as Record<string | symbol, unknown>)[prop]
+    return (_supabase as unknown as Record<string | symbol, unknown>)[prop]
   },
 })
 

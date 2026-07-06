@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { MATERIAL_TYPES, UNIT_TYPES } from '@/lib/constants';
+import { MATERIAL_TYPE_LABELS, UNIT_TYPE_LABELS } from '@/lib/constants';
 
 interface ListingCardProps {
   id: string;
@@ -38,8 +38,8 @@ export default function ListingCard(props: ListingCardProps) {
     pricingType, seller, images,
   } = props;
 
-  const materialLabel = MATERIAL_TYPES.find(m => m.value === materialType)?.label || materialType;
-  const unitLabel = UNIT_TYPES.find(u => u.value === unitType)?.label || unitType;
+  const materialLabel = MATERIAL_TYPE_LABELS[materialType as keyof typeof MATERIAL_TYPE_LABELS] || materialType;
+  const unitLabel = UNIT_TYPE_LABELS[unitType as keyof typeof UNIT_TYPE_LABELS] || unitType;
 
   return (
     <Link href={`/listings/${id}`} className="block">

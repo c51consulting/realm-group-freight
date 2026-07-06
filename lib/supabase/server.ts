@@ -2,6 +2,34 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+type CookieToSet = {
+  name: string
+  value: string
+  options: Record<string, unknown>
+}
+
+const createQueryStub = () => {
+  const query = {
+    select: () => query,
+    insert: () => query,
+    update: () => query,
+    delete: () => query,
+    upsert: () => query,
+    eq: () => query,
+    in: () => query,
+    filter: () => query,
+    or: () => query,
+    order: () => query,
+    limit: () => query,
+    range: () => query,
+    single: async () => ({ data: null, error: null }),
+    maybeSingle: async () => ({ data: null, error: null }),
+    then: (resolve: (value: { data: null; error: null; count: number }) => unknown) =>
+      Promise.resolve({ data: null, error: null, count: 0 }).then(resolve),
+  }
+  return query
+}
+
 // Minimal stub for when Supabase env vars are unavailable (e.g. during static analysis)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const createStubClient = () => ({
@@ -13,13 +41,7 @@ const createStubClient = () => ({
     exchangeCodeForSession: async () => ({ data: null, error: null }),
     resend: async () => ({ data: null, error: null }),
   },
-  from: () => ({
-    select: () => ({ data: null, error: null, count: 0 }),
-    insert: () => ({ data: null, error: null }),
-    update: () => ({ data: null, error: null }),
-    delete: () => ({ data: null, error: null }),
-    upsert: () => ({ data: null, error: null }),
-  }),
+  from: createQueryStub,
   storage: { from: () => ({ upload: async () => ({ data: null, error: null }), getPublicUrl: () => ({ data: { publicUrl: '' } }) }) },
   rpc: async () => ({ data: null, error: null }),
 }) as unknown as SupabaseClient<any>
@@ -41,7 +63,7 @@ export const createClient = async (): Promise<SupabaseClient<any>> => {
           getAll() {
             return cookieStore.getAll()
           },
-          setAll(cookiesToSet) {
+          setAll(cookiesToSet: CookieToSet[]) {
             try {
               cookiesToSet.forEach(({ name, value, options }) =>
                 cookieStore.set(name, value, options)
