@@ -1,6 +1,14 @@
 -- Allow normal marketplace offer and order lifecycle under RLS.
 -- Safe to re-run.
 
+-- Authenticated users must be able to create their public profile row.
+-- Listing and offer APIs upsert this row as the FK target for seller/buyer IDs.
+DROP POLICY IF EXISTS "Users can create own profile" ON users;
+CREATE POLICY "Users can create own profile" ON users
+  FOR INSERT WITH CHECK (
+    auth.uid() = id
+  );
+
 -- Sellers must be able to see offers made on their own listings.
 DROP POLICY IF EXISTS "Sellers can view listing offers" ON offers;
 CREATE POLICY "Sellers can view listing offers" ON offers
