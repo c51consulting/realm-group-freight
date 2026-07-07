@@ -58,6 +58,17 @@ export default function Header() {
 
           {/* Desktop CTA / Auth */}
           <div className="hidden md:flex items-center gap-3">
+            <a
+              href="https://www.payintime.global"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-yellow-300 bg-yellow-300 px-3 py-2 text-sm font-extrabold uppercase text-gray-950 shadow-sm transition-colors hover:border-lime-300 hover:bg-lime-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-400"
+              aria-label="Need finance - check out Pay In Time"
+            >
+              <span className="lg:hidden">Finance</span>
+              <span className="hidden lg:inline xl:hidden">Need finance</span>
+              <span className="hidden xl:inline">Need finance - Pay In Time</span>
+            </a>
             {user ? (
               <>
                 <Link
@@ -116,12 +127,21 @@ export default function Header() {
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white px-4 py-4">
           <Navigation mobile onNavigate={() => setMobileOpen(false)} />
+          <a
+            href="https://www.payintime.global"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setMobileOpen(false)}
+            className="block w-full text-center px-4 py-4 rounded-md border border-yellow-300 bg-yellow-300 text-base font-extrabold uppercase text-gray-950 shadow-sm transition-colors hover:border-lime-300 hover:bg-lime-300 mt-4"
+          >
+            Need finance - check out Pay In Time
+          </a>
           {user ? (
             <>
               <Link
                 href="/listings/new"
                 onClick={() => setMobileOpen(false)}
-                className="block w-full text-center px-4 py-4 rounded-lg bg-brand-600 text-white text-base font-medium hover:bg-brand-700 transition-colors mt-4"
+                className="block w-full text-center px-4 py-4 rounded-lg bg-brand-600 text-white text-base font-medium hover:bg-brand-700 transition-colors mt-2"
               >
                 + Post Listing
               </Link>
@@ -141,7 +161,7 @@ export default function Header() {
               <Link
                 href="/login"
                 onClick={() => setMobileOpen(false)}
-                className="block w-full text-center px-4 py-4 rounded-lg border border-gray-300 text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors mt-4"
+                className="block w-full text-center px-4 py-4 rounded-lg border border-gray-300 text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors mt-2"
               >
                 Login
               </Link>
