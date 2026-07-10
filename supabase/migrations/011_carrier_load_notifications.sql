@@ -51,7 +51,7 @@ CREATE POLICY cln_admin_all ON carrier_load_notifications
 
 DROP TRIGGER IF EXISTS tg_carrier_load_notifications_updated_at ON carrier_load_notifications;
 CREATE TRIGGER tg_carrier_load_notifications_updated_at BEFORE UPDATE ON carrier_load_notifications
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 DROP POLICY IF EXISTS orders_select_notified_carrier ON orders;
 CREATE POLICY orders_select_notified_carrier ON orders
