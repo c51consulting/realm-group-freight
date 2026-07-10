@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { notifyMatchedCarriersForOrder } from '@/lib/carrierNotifications';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -175,6 +176,12 @@ export async function POST(req: Request) {
             })
             .eq('id', orderId);
           if (error) throw error;
+
+          try {
+            await notifyMatchedCarriersForOrder(supabase, orderId);
+          } catch (notifyErr) {
+            console.error('Carrier notification error', notifyErr);
+          }
         } else {
           console.warn('checkout.session.completed missing orderId metadata', session.id);
         }

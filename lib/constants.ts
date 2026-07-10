@@ -178,11 +178,10 @@ export const NAV_LINKS = [
   { href: '/livestock', label: 'Livestock' },
     { href: '/equipment', label: 'Equipment' },
   { href: '/freight', label: 'Freight' },
-  { href: '/carriers', label: 'Carriers' },
   { href: '/quality', label: 'Feed Tests' },
   { href: '/offers', label: 'Offers' },
   { href: '/orders', label: 'Orders' },
-  { href: '/carrier/dashboard', label: 'For Carriers' },
+  { href: '/carriers', label: 'Carrier Network' },
 ] as const;
 
 export const DEFAULT_PAGE_SIZE = 20;

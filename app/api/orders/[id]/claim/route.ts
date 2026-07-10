@@ -33,6 +33,19 @@ export async function POST(
     return NextResponse.json({ error: `Carrier status is ${carrier.status}. Must be active to claim loads.` }, { status: 403 });
   }
 
+  const { data: notification, error: notificationErr } = await supabase
+    .from('carrier_load_notifications')
+    .select('id, status')
+    .eq('order_id', orderId)
+    .eq('carrier_id', carrier.id)
+    .in('status', ['pending', 'sms_sent'])
+    .maybeSingle();
+
+  if (notificationErr) return NextResponse.json({ error: notificationErr.message }, { status: 500 });
+  if (!notification) {
+    return NextResponse.json({ error: 'This load was not matched to your carrier account, or the alert has already been actioned.' }, { status: 403 });
+  }
+
   const body = await request.json().catch(() => ({}));
   const freightAmount = body.freightAmount ?? body.freight_amount ?? null;
 
@@ -67,6 +80,18 @@ export async function POST(
     if (o.carrier_id) return NextResponse.json({ error: 'Order already claimed' }, { status: 409 });
     return NextResponse.json({ error: `Order status is ${o.status}; only paid orders can be claimed` }, { status: 409 });
   }
+
+  await supabase
+    .from('carrier_load_notifications')
+    .update({ status: 'accepted', responded_at: new Date().toISOString() })
+    .eq('id', notification.id);
+
+  await supabase
+    .from('carrier_load_notifications')
+    .update({ status: 'expired', responded_at: new Date().toISOString() })
+    .eq('order_id', orderId)
+    .neq('id', notification.id)
+    .in('status', ['pending', 'sms_sent']);
 
   return NextResponse.json({ order: claimed });
 }

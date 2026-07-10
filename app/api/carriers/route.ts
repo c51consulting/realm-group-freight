@@ -37,23 +37,11 @@ function toDbRow(input: Record<string, any>): Record<string, any> {
   return out;
 }
 
-export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  const { searchParams } = new URL(request.url);
-  const status = searchParams.get('status') ?? 'active';
-  const region = searchParams.get('region');
-
-  let query = supabase
-    .from('carriers')
-    .select('id, business_name, regions_served, commodities_handled, fleet_size, rating, review_count, status')
-    .eq('status', status)
-    .order('rating', { ascending: false });
-
-  if (region) query = query.contains('regions_served', [region]);
-
-  const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ carriers: data ?? [] });
+export async function GET(_request: NextRequest) {
+  return NextResponse.json(
+    { error: 'Carrier discovery is private. Loads are matched to approved carriers by the REALM network.' },
+    { status: 410 }
+  );
 }
 
 export async function POST(request: NextRequest) {

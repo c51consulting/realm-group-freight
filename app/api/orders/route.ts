@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { notifyMatchedCarriersForOrder } from '@/lib/carrierNotifications';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -102,5 +103,14 @@ export async function PATCH(request: NextRequest) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  if (action === 'paid') {
+    try {
+      await notifyMatchedCarriersForOrder(supabase, orderId);
+    } catch (err) {
+      console.error('[orders] carrier notification error', err);
+    }
+  }
+
   return NextResponse.json(data);
 }

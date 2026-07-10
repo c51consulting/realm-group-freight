@@ -3,7 +3,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function ClaimLoadButton({ orderId, canClaim }: { orderId: string; canClaim: boolean }) {
+export default function ClaimLoadButton({
+  orderId,
+  notificationId,
+  canClaim,
+}: {
+  orderId: string;
+  notificationId: string;
+  canClaim: boolean;
+}) {
   const router = useRouter();
   const [showQuote, setShowQuote] = useState(false);
   const [freightAmount, setFreightAmount] = useState<string>('');
@@ -23,7 +31,7 @@ export default function ClaimLoadButton({ orderId, canClaim }: { orderId: string
       });
       const json = await res.json();
       if (!res.ok) {
-        setError(json.error || 'Failed to claim');
+        setError(json.error || 'Failed to accept');
         return;
       }
       router.push(`/orders/${orderId}`);
@@ -32,12 +40,40 @@ export default function ClaimLoadButton({ orderId, canClaim }: { orderId: string
     }
   }
 
+  async function handleReject() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/carrier/load-notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationId, action: 'reject' }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(json.error || 'Failed to reject');
+        return;
+      }
+      router.refresh();
+    } finally {
+      setLoading(false);
+    }
+  }
+
   if (!canClaim) {
-    return <button disabled className="btn-secondary w-full opacity-50 cursor-not-allowed">Claim (activate account first)</button>;
+    return <button disabled className="btn-secondary w-full opacity-50 cursor-not-allowed">Accept unavailable until activated</button>;
   }
 
   if (!showQuote) {
-    return <button onClick={() => setShowQuote(true)} className="btn-primary w-full">Claim this load</button>;
+    return (
+      <div className="grid grid-cols-2 gap-2">
+        <button onClick={() => setShowQuote(true)} className="btn-primary w-full">Accept load</button>
+        <button onClick={handleReject} disabled={loading} className="btn-secondary w-full">
+          {loading ? 'Updating...' : 'Reject'}
+        </button>
+        {error && <p className="col-span-2 text-xs text-red-600">{error}</p>}
+      </div>
+    );
   }
 
   return (
@@ -55,7 +91,9 @@ export default function ClaimLoadButton({ orderId, canClaim }: { orderId: string
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div className="flex gap-2">
         <button onClick={() => setShowQuote(false)} className="btn-secondary flex-1">Cancel</button>
-        <button onClick={handleClaim} disabled={loading} className="btn-primary flex-1">{loading ? 'Claiming…' : 'Confirm'}</button>
+        <button onClick={handleClaim} disabled={loading} className="btn-primary flex-1">
+          {loading ? 'Accepting...' : 'Confirm'}
+        </button>
       </div>
     </div>
   );

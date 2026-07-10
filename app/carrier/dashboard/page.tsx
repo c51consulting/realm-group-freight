@@ -33,13 +33,12 @@ export default async function CarrierDashboardPage() {
 
   if (!carrier) redirect('/carrier/onboard');
 
-  // Fetch carrier's orders + vehicles + drivers counts
-  const [vehiclesRes, driversRes, activeOrdersRes, completedOrdersRes, availableLoadsRes] = await Promise.all([
+  const [vehiclesRes, driversRes, activeOrdersRes, completedOrdersRes, matchedAlertsRes] = await Promise.all([
     supabase.from('carrier_vehicles').select('id', { count: 'exact', head: true }).eq('carrier_id', carrier.id),
     supabase.from('carrier_drivers').select('id', { count: 'exact', head: true }).eq('carrier_id', carrier.id),
     supabase.from('orders').select('id', { count: 'exact', head: true }).eq('carrier_id', user.id).not('status', 'in', '(completed,refunded,cancelled)'),
     supabase.from('orders').select('id', { count: 'exact', head: true }).eq('carrier_id', user.id).eq('status', 'completed'),
-    supabase.from('orders').select('id', { count: 'exact', head: true }).is('carrier_id', null).eq('status', 'paid'),
+    supabase.from('carrier_load_notifications').select('id', { count: 'exact', head: true }).eq('carrier_id', carrier.id).in('status', ['pending', 'sms_sent']),
   ]);
 
   const { data: myOrders } = await supabase
@@ -56,7 +55,7 @@ export default async function CarrierDashboardPage() {
       <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="page-title">{carrier.business_name}</h1>
-          <p className="page-subtitle">Carrier dashboard</p>
+          <p className="page-subtitle">Carrier network dashboard</p>
         </div>
         <span className={`px-3 py-1.5 rounded-full text-sm font-medium border ${STATUS_BADGE[carrier.status] ?? ''}`}>
           {STATUS_LABEL[carrier.status] ?? carrier.status}
@@ -71,18 +70,17 @@ export default async function CarrierDashboardPage() {
             {carrier.status === 'rejected' && 'Application not approved'}
           </h3>
           <p className="text-sm text-yellow-900">
-            {carrier.status === 'pending_review' && 'Our team is reviewing your compliance docs. You\'ll be able to claim loads once activated.'}
+            {carrier.status === 'pending_review' && 'Our team is reviewing your compliance docs. You will be able to accept matched loads once activated.'}
             {carrier.status === 'suspended' && `Your account has been suspended. ${carrier.rejection_reason ?? 'Contact support.'}`}
             {carrier.status === 'rejected' && (carrier.rejection_reason ?? 'Please contact support for details.')}
           </p>
         </div>
       )}
 
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <Link href="/carrier/loads" className="card p-5 hover:shadow-md transition-shadow">
-          <p className="text-sm text-gray-500 mb-1">Available Loads</p>
-          <p className="text-2xl font-bold">{availableLoadsRes.count ?? 0}</p>
+          <p className="text-sm text-gray-500 mb-1">Matched Alerts</p>
+          <p className="text-2xl font-bold">{matchedAlertsRes.count ?? 0}</p>
         </Link>
         <div className="card p-5">
           <p className="text-sm text-gray-500 mb-1">Active Jobs</p>
@@ -102,25 +100,25 @@ export default async function CarrierDashboardPage() {
         </div>
       </div>
 
-      {/* Quick actions */}
       <div className="flex flex-wrap gap-3 mb-8">
-        {isActive && <Link href="/carrier/loads" className="btn-primary">🚛 Browse available loads</Link>}
+        {isActive && <Link href="/carrier/loads" className="btn-primary">View matched load alerts</Link>}
         <Link href="/carrier/onboard" className="btn-secondary">Edit profile</Link>
       </div>
 
-      {/* Recent jobs */}
       <div className="card p-6">
         <h2 className="font-semibold mb-4">Recent jobs</h2>
         {!myOrders || myOrders.length === 0 ? (
-          <p className="text-sm text-gray-500">No jobs yet. {isActive ? <Link href="/carrier/loads" className="text-brand-600 underline">Browse available loads</Link> : 'You\'ll see jobs here once you start claiming loads.'}</p>
+          <p className="text-sm text-gray-500">
+            No jobs yet. {isActive ? <Link href="/carrier/loads" className="text-brand-600 underline">View matched alerts</Link> : 'You will see jobs here once you start accepting matched loads.'}
+          </p>
         ) : (
           <div className="divide-y">
             {myOrders.map((o: any) => (
               <Link key={o.id} href={`/orders/${o.id}`} className="block py-3 hover:bg-gray-50 -mx-2 px-2 rounded">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium">{o.listing?.title ?? '—'}</p>
-                    <p className="text-xs text-gray-500">{o.order_number} · {o.status}</p>
+                    <p className="font-medium">{o.listing?.title ?? '-'}</p>
+                    <p className="text-xs text-gray-500">{o.order_number} - {o.status}</p>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold">${Number(o.freight_amount ?? 0).toFixed(2)}</p>
