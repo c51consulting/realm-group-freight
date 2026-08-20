@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navigation from './Navigation';
+import InstallAppButton from './InstallAppButton';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
@@ -58,6 +59,7 @@ export default function Header() {
 
           {/* Desktop CTA / Auth */}
           <div className="hidden md:flex items-center gap-3">
+            <InstallAppButton variant="header" />
             {user ? (
               <>
                 <Link
@@ -128,12 +130,13 @@ export default function Header() {
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white px-4 py-4">
           <Navigation mobile onNavigate={() => setMobileOpen(false)} />
+          <InstallAppButton variant="mobile" className="mt-4" />
           {user ? (
             <>
               <Link
                 href="/listings/new"
                 onClick={() => setMobileOpen(false)}
-                className="block w-full text-center px-4 py-4 rounded-lg bg-brand-600 text-white text-base font-medium hover:bg-brand-700 transition-colors mt-4"
+                className="block w-full text-center px-4 py-4 rounded-lg bg-brand-600 text-white text-base font-medium hover:bg-brand-700 transition-colors mt-2"
               >
                 + Post Listing
               </Link>

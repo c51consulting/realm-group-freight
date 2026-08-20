@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Header from '@/components/Header';
+import RegisterServiceWorker from '@/components/RegisterServiceWorker';
 import './globals.css';
 import { APP_NAME, APP_DESCRIPTION } from '@/lib/constants';
 import Link from 'next/link';
@@ -65,6 +66,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
+        <RegisterServiceWorker />
         <Header />
         <main>{children}</main>
         <footer className="border-t bg-gray-900 text-gray-400 mt-16">

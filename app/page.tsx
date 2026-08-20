@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import InstallAppButton from '@/components/InstallAppButton';
 import { APP_NAME } from '@/lib/constants';
 
 export const metadata: Metadata = {
@@ -108,6 +109,7 @@ export default function HomePage() {
               with verified quality testing, integrated freight, and secure payments held in trust.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
+              <InstallAppButton />
               <Link
                 href="/listings"
                 className="inline-flex items-center rounded-lg bg-white text-brand-700 px-6 py-3 font-semibold hover:bg-brand-50 transition-colors"
