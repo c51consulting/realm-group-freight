@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="REALM app tile">
+  <defs>
+    <linearGradient id="bg" x1="70" y1="40" x2="450" y2="485" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F5B2C"/>
+      <stop offset="0.58" stop-color="#204F22"/>
+      <stop offset="1" stop-color="#6F8624"/>
+    </linearGradient>
+    <linearGradient id="chevGreen" x1="292" y1="145" x2="382" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4FB84A"/>
+      <stop offset="1" stop-color="#0D7C42"/>
+    </linearGradient>
+    <linearGradient id="chevGold" x1="337" y1="145" x2="427" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE24B"/>
+      <stop offset="0.5" stop-color="#F5A23A"/>
+      <stop offset="1" stop-color="#EF5A32"/>
+    </linearGradient>
+    <linearGradient id="chevOrange" x1="382" y1="145" x2="472" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFB43D"/>
+      <stop offset="1" stop-color="#E63F32"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
+  <path d="M55 401C170 339 288 334 458 360" stroke="#F2D642" stroke-width="16" stroke-linecap="round" opacity="0.95"/>
+  <path d="M47 432C190 381 303 383 462 412" stroke="#89B13C" stroke-width="9" stroke-linecap="round" opacity="0.85"/>
+  <path d="M98 168C138 128 181 101 230 87C203 134 171 168 119 191C107 186 101 178 98 168Z" fill="#EAF7DF" opacity="0.95"/>
+  <path d="M94 214C135 201 179 202 228 217C183 244 139 251 91 237C88 229 89 221 94 214Z" fill="#B7DC58" opacity="0.95"/>
+  <text x="55" y="298" fill="#FFFFFF" font-family="Arial Black, Arial, sans-serif" font-size="84" font-weight="900">REALM</text>
+  <text x="62" y="342" fill="#F2D642" font-family="Arial, sans-serif" font-size="30" font-weight="800" letter-spacing="3">GROUP GLOBAL</text>
+  <path d="M323 119L396 256L323 393H383L456 256L383 119H323Z" fill="url(#chevGreen)"/>
+  <path d="M365 119L438 256L365 393H425L498 256L425 119H365Z" fill="url(#chevGold)"/>
+  <path d="M407 119L480 256L407 393H467L540 256L467 119H407Z" fill="url(#chevOrange)" opacity="0.96"/>
+</svg>
