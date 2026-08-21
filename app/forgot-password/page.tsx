@@ -1,50 +1,19 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
-export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [info, setInfo] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+type PageProps = {
+  searchParams?: Record<string, string | string[] | undefined>
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setInfo(null)
-    setLoading(true)
+function param(searchParams: PageProps['searchParams'], key: string) {
+  const value = searchParams?.[key]
+  return Array.isArray(value) ? value[0] : value
+}
 
-    try {
-      const redirectTo =
-        typeof window !== 'undefined'
-          ? `${window.location.origin}/reset-password`
-          : undefined
-
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, redirectTo }),
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        setError(result.error || 'Unable to send reset email. Please try again.')
-        return
-      }
-
-      setInfo(
-        'If an account exists for that email, a password reset link has been sent. Please check your inbox.'
-      )
-    } catch (err: any) {
-      setError(err?.message || 'Unexpected error. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
+export default function ForgotPasswordPage({ searchParams }: PageProps) {
+  const error = param(searchParams, 'error')
+  const info = param(searchParams, 'info')
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-700 px-4">
@@ -53,14 +22,13 @@ export default function ForgotPasswordPage() {
         <p className="text-sm text-white/80 mb-6 text-center">
           Enter your email and we'll send you a link to reset it.
         </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form action="/api/auth/forgot-password" method="post" className="space-y-4">
           <div>
             <label className="block text-sm mb-1">Email</label>
             <input
               type="email"
+              name="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-lg px-3 py-2 bg-white/20 border border-white/30 placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
               placeholder="you@example.com"
               autoComplete="email"
@@ -76,10 +44,9 @@ export default function ForgotPasswordPage() {
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60"
+            className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700"
           >
-            {loading ? 'Sending...' : 'Send reset link'}
+            Send reset link
           </button>
 
           <div className="flex items-center justify-between text-sm">
