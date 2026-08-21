@@ -22,6 +22,13 @@ function parseSupabaseUrl(value: string | undefined) {
   }
 }
 
+function getKeyKind(value: string | undefined) {
+  if (!value) return 'missing'
+  if (value.startsWith('sb_publishable_')) return 'publishable'
+  if (value.split('.').length === 3) return 'legacy_jwt'
+  return 'unknown'
+}
+
 export async function GET() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -39,23 +46,25 @@ export async function GET() {
     const baseUrl = supabaseUrl.replace(/\/$/, '')
 
     try {
-      const response = await fetch(`${baseUrl}/auth/v1/health`, {
+      const response = await fetch(`${baseUrl}/auth/v1/settings`, {
+        headers: {
+          apikey: anonKey,
+        },
         cache: 'no-store',
       })
       authHealthStatus = response.status
       authHealthReachable = response.ok
       if (!response.ok) {
-        authHealthError = `Supabase auth health responded with HTTP ${response.status}`
+        authHealthError = `Supabase auth settings responded with HTTP ${response.status}`
       }
     } catch (error) {
-      authHealthError = error instanceof Error ? error.message : 'Unable to reach Supabase auth health'
+      authHealthError = error instanceof Error ? error.message : 'Unable to reach Supabase auth settings'
     }
 
     try {
       const response = await fetch(`${baseUrl}/rest/v1/`, {
         headers: {
           apikey: anonKey,
-          authorization: `Bearer ${anonKey}`,
         },
         cache: 'no-store',
       })
@@ -78,6 +87,7 @@ export async function GET() {
       supabaseUrl: parsedUrl,
       anonKeyPresent: Boolean(anonKey),
       anonKeyPreview: mask(anonKey),
+      anonKeyKind: getKeyKind(anonKey),
       serviceRoleKeyPresent: Boolean(serviceKey),
     },
     supabaseAuthHealth: {
