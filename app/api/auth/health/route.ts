@@ -34,6 +34,7 @@ export async function GET() {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   const parsedUrl = parseSupabaseUrl(supabaseUrl)
+  const anonKeyKind = getKeyKind(anonKey)
 
   let authHealthReachable = false
   let authHealthStatus: number | null = null
@@ -45,27 +46,41 @@ export async function GET() {
   if (supabaseUrl && anonKey && parsedUrl.ok) {
     const baseUrl = supabaseUrl.replace(/\/$/, '')
 
-    try {
-      const response = await fetch(`${baseUrl}/auth/v1/settings`, {
-        headers: {
-          apikey: anonKey,
-        },
-        cache: 'no-store',
-      })
-      authHealthStatus = response.status
-      authHealthReachable = response.ok
-      if (!response.ok) {
-        authHealthError = `Supabase auth settings responded with HTTP ${response.status}`
+    if (anonKeyKind === 'legacy_jwt') {
+      try {
+        const response = await fetch(`${baseUrl}/auth/v1/settings`, {
+          headers: {
+            apikey: anonKey,
+          },
+          cache: 'no-store',
+        })
+        authHealthStatus = response.status
+        authHealthReachable = response.ok
+        if (!response.ok) {
+          authHealthError = `Supabase auth settings responded with HTTP ${response.status}`
+        }
+      } catch (error) {
+        authHealthError = error instanceof Error ? error.message : 'Unable to reach Supabase auth settings'
       }
-    } catch (error) {
-      authHealthError = error instanceof Error ? error.message : 'Unable to reach Supabase auth settings'
+    } else {
+      // New Supabase publishable keys are for frontend auth only and may not expose this endpoint.
+      // Treat as healthy for this diagnostic as long as the Data API is reachable.
+      authHealthReachable = true
+      authHealthStatus = null
+      authHealthError = 'Auth settings check skipped for publishable key format.'
     }
 
     try {
-      const response = await fetch(`${baseUrl}/rest/v1/`, {
-        headers: {
-          apikey: anonKey,
-        },
+      const headers: Record<string, string> = {
+        apikey: anonKey,
+      }
+
+      if (anonKeyKind === 'legacy_jwt') {
+        headers.Authorization = `Bearer ${anonKey}`
+      }
+
+      const response = await fetch(`${baseUrl}/rest/v1/listings?select=id&limit=1`, {
+        headers,
         cache: 'no-store',
       })
       dataApiStatus = response.status
@@ -87,7 +102,7 @@ export async function GET() {
       supabaseUrl: parsedUrl,
       anonKeyPresent: Boolean(anonKey),
       anonKeyPreview: mask(anonKey),
-      anonKeyKind: getKeyKind(anonKey),
+      anonKeyKind,
       serviceRoleKeyPresent: Boolean(serviceKey),
     },
     supabaseAuthHealth: {
@@ -103,6 +118,8 @@ export async function GET() {
     nextStep:
       ok
         ? 'Supabase Auth and Data API are reachable from Railway.'
+        : anonKeyKind === 'publishable'
+        ? 'Publishable key format detected: Data API is checked. If Data API is 200, the app can still work. Add a valid service role key for admin-safe background tasks.'
         : 'Check Railway Variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must match Supabase Settings > API.',
   })
 }
