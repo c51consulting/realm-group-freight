@@ -1,9 +1,36 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
+function getSafeOrigin(request: NextRequest) {
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const forwardedProto = request.headers.get('x-forwarded-proto')
+  const requestUrl = new URL(request.url)
+  let protocol = forwardedProto ? `${forwardedProto}:` : requestUrl.protocol
+  let host = forwardedHost || requestUrl.host
+
+  if (host.startsWith('0.0.0.0')) {
+    host = host.replace('0.0.0.0', 'localhost')
+    protocol = 'http:'
+  }
+
+  if (host.startsWith('localhost')) {
+    protocol = 'http:'
+  }
+
+  return `${protocol}//${host}`
+}
+
+function authErrorMessage(message: string) {
+  if (message.toLowerCase().includes('fetch failed')) {
+    return 'The authentication service could not be reached. Please check the Supabase settings in Railway.'
+  }
+
+  return message
+}
+
 export async function POST(request: NextRequest) {
   const isFormPost = request.headers.get('content-type')?.includes('application/x-www-form-urlencoded')
-  const origin = new URL(request.url).origin
+  const origin = getSafeOrigin(request)
   let email = ''
   let password = ''
   let confirmPassword = ''
@@ -23,7 +50,7 @@ export async function POST(request: NextRequest) {
   }
 
   const redirectWith = (path: string, key: 'error' | 'info', value: string) => {
-    const url = new URL(path, request.url)
+    const url = new URL(path, origin)
     url.searchParams.set(key, value)
     return NextResponse.redirect(url, { status: 303 })
   }
@@ -52,7 +79,7 @@ export async function POST(request: NextRequest) {
   })
 
   if (error) {
-    if (isFormPost) return redirectWith('/register', 'error', error.message)
+    if (isFormPost) return redirectWith('/register', 'error', authErrorMessage(error.message))
     return NextResponse.json({ error: error.message }, { status: 400 })
   }
 
@@ -61,7 +88,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (isFormPost) {
-    return NextResponse.redirect(new URL('/dashboard', request.url), { status: 303 })
+    return NextResponse.redirect(new URL('/dashboard', origin), { status: 303 })
   }
 
   return NextResponse.json({ success: true, needsConfirmation: Boolean(data.user && !data.session) })
