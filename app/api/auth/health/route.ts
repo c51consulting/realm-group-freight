@@ -28,31 +28,51 @@ export async function GET() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   const parsedUrl = parseSupabaseUrl(supabaseUrl)
 
-  let authReachable = false
-  let authStatus: number | null = null
-  let authError: string | null = null
+  let authHealthReachable = false
+  let authHealthStatus: number | null = null
+  let authHealthError: string | null = null
+  let dataApiReachable = false
+  let dataApiStatus: number | null = null
+  let dataApiError: string | null = null
 
   if (supabaseUrl && anonKey && parsedUrl.ok) {
+    const baseUrl = supabaseUrl.replace(/\/$/, '')
+
     try {
-      const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/settings`, {
+      const response = await fetch(`${baseUrl}/auth/v1/health`, {
+        cache: 'no-store',
+      })
+      authHealthStatus = response.status
+      authHealthReachable = response.ok
+      if (!response.ok) {
+        authHealthError = `Supabase auth health responded with HTTP ${response.status}`
+      }
+    } catch (error) {
+      authHealthError = error instanceof Error ? error.message : 'Unable to reach Supabase auth health'
+    }
+
+    try {
+      const response = await fetch(`${baseUrl}/rest/v1/`, {
         headers: {
           apikey: anonKey,
           authorization: `Bearer ${anonKey}`,
         },
         cache: 'no-store',
       })
-      authStatus = response.status
-      authReachable = response.ok
+      dataApiStatus = response.status
+      dataApiReachable = response.ok
       if (!response.ok) {
-        authError = `Supabase auth responded with HTTP ${response.status}`
+        dataApiError = `Supabase Data API responded with HTTP ${response.status}`
       }
     } catch (error) {
-      authError = error instanceof Error ? error.message : 'Unable to reach Supabase auth'
+      dataApiError = error instanceof Error ? error.message : 'Unable to reach Supabase Data API'
     }
   }
 
+  const ok = Boolean(parsedUrl.ok && anonKey && authHealthReachable && dataApiReachable)
+
   return NextResponse.json({
-    ok: Boolean(parsedUrl.ok && anonKey && authReachable),
+    ok,
     environment: {
       supabaseUrlPresent: Boolean(supabaseUrl),
       supabaseUrl: parsedUrl,
@@ -60,14 +80,19 @@ export async function GET() {
       anonKeyPreview: mask(anonKey),
       serviceRoleKeyPresent: Boolean(serviceKey),
     },
-    supabaseAuth: {
-      reachable: authReachable,
-      status: authStatus,
-      error: authError,
+    supabaseAuthHealth: {
+      reachable: authHealthReachable,
+      status: authHealthStatus,
+      error: authHealthError,
+    },
+    supabaseDataApi: {
+      reachable: dataApiReachable,
+      status: dataApiStatus,
+      error: dataApiError,
     },
     nextStep:
-      parsedUrl.ok && anonKey && authReachable
-        ? 'Supabase auth is reachable from Railway.'
+      ok
+        ? 'Supabase Auth and Data API are reachable from Railway.'
         : 'Check Railway Variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must match Supabase Settings > API.',
   })
 }
