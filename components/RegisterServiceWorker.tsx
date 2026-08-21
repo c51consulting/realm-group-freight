@@ -4,11 +4,14 @@ import { useEffect } from 'react';
 
 export default function RegisterServiceWorker() {
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') return;
     if (!('serviceWorker' in navigator)) return;
 
-    navigator.serviceWorker.register('/sw.js').catch((error) => {
-      console.warn('REALM app install support could not start.', error);
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      registrations.forEach((registration) => {
+        registration.unregister();
+      });
+    }).catch((error) => {
+      console.warn('REALM app helper cleanup could not run.', error);
     });
   }, []);
 

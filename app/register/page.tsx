@@ -1,9 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,9 +14,6 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-
-  const router = useRouter()
-  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,18 +38,20 @@ export default function RegisterPage() {
           ? `${window.location.origin}/login`
           : undefined
 
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo },
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, emailRedirectTo }),
       })
 
-      if (error) {
-        setError(error.message || 'Unable to create account. Please try again.')
+      const result = await response.json()
+
+      if (!response.ok) {
+        setError(result.error || 'Unable to create account. Please try again.')
         return
       }
 
-      if (data?.user && !data.session) {
+      if (result.needsConfirmation) {
         setInfo(
           'Account created. Please check your inbox for a confirmation email before signing in.'
         )

@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,11 +13,9 @@ export default function LoginPage() {
   const [info, setInfo] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showResend, setShowResend] = useState(false)
-  const router = useRouter()
   const searchParams = useSearchParams()
   const message = searchParams.get('message')
   const redirectTo = searchParams.get('redirectTo') ?? '/dashboard'
-  const supabase = createClient()
 
   // Context line based on redirectTo
   const getContextLine = () => {
@@ -34,16 +31,22 @@ export default function LoginPage() {
     setShowResend(false)
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
-        const msg = error.message.toLowerCase()
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const result = await response.json()
+
+      if (!response.ok) {
+        const msg = String(result.error || '').toLowerCase()
         if (msg.includes('email not confirmed')) {
           setError('Your email has not been confirmed yet. Please check your inbox, or resend the confirmation email below.')
           setShowResend(true)
         } else if (msg.includes('invalid login') || msg.includes('invalid credentials')) {
           setError('Invalid email or password.')
         } else {
-          setError(error.message)
+          setError(result.error || 'Unable to sign in. Please try again.')
         }
       } else {
         // Hard redirect ensures session cookies are included in the
@@ -64,8 +67,13 @@ export default function LoginPage() {
       setError('Enter your email above first, then click Resend.')
       return
     }
-    const { error } = await supabase.auth.resend({ type: 'signup', email })
-    if (error) setError(error.message)
+    const response = await fetch('/api/auth/resend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+    const result = await response.json()
+    if (!response.ok) setError(result.error || 'Unable to resend confirmation email.')
     else setInfo('Confirmation email re-sent to ' + email + '. Please check your inbox (and spam folder).')
   }
 
