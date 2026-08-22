@@ -102,9 +102,12 @@ export default function CreateListingPage() {
       return;
     }
     let imageUrls: string[] = [];
+    let accessToken: string | null = null;
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('You must be signed in to upload photos');
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      accessToken = session?.access_token ?? null;
+      if (!user || !accessToken) throw new Error('You must be signed in to upload photos');
       for (const file of files) {
         const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
         const path = user.id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
@@ -123,7 +126,10 @@ export default function CreateListingPage() {
     try {
       const res = await fetch('/api/listings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
         body: JSON.stringify({ ...payload, images: imageUrls }),      });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));

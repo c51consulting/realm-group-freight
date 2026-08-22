@@ -63,7 +63,7 @@ export default function Header() {
             {user ? (
               <>
                 <Link
-                  href="/listings/new"
+                  href="/listings/create"
                   className="px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors"
                 >
                   + Post Listing
@@ -134,7 +134,7 @@ export default function Header() {
           {user ? (
             <>
               <Link
-                href="/listings/new"
+                href="/listings/create"
                 onClick={() => setMobileOpen(false)}
                 className="block w-full text-center px-4 py-4 rounded-lg bg-brand-600 text-white text-base font-medium hover:bg-brand-700 transition-colors mt-2"
               >

@@ -12,7 +12,6 @@ type CookieToSet = {
 // Auth required only for transactional/personal routes:
 const protectedRoutes = [
   '/dashboard',
-  '/listings/create',
   '/livestock/create',
   '/equipment/create',
   '/freight/create',

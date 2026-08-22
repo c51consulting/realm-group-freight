@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient as createSupabaseJsClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { validateListing } from '@/lib/validation';
 
@@ -59,6 +60,28 @@ function mapSortBy(sortBy: string): string {
   return CAMEL_TO_SNAKE[sortBy] ?? sortBy;
 }
 
+async function createAuthenticatedClient(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (authHeader?.toLowerCase().startsWith('bearer ') && url && anonKey) {
+    return createSupabaseJsClient(url, anonKey, {
+      global: {
+        headers: {
+          Authorization: authHeader,
+        },
+      },
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+  }
+
+  return createClient();
+}
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
@@ -98,7 +121,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
+  const supabase = await createAuthenticatedClient(request);
   const body = await request.json();
 
   // Validate
